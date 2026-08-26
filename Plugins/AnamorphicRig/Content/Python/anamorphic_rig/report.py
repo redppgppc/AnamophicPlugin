@@ -9,7 +9,7 @@ from . import geometry as G
 from . import video as V
 
 
-def _fmt_m(cm):
+def _fmt_m(cm):  # 훅 시험
     return "%.2f m" % (cm / 100.0)
 
 
