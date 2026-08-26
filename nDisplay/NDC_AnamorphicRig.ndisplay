@@ -1,0 +1,97 @@
+{
+  "nDisplay": {
+    "description": "Anamorphic Rig: BentWall",
+    "version": "5.00",
+    "assetPath": "/Game/AnamorphicRig/NDC_AnamorphicRig.NDC_AnamorphicRig",
+    "misc": {
+      "bFollowLocalPlayerCamera": false,
+      "bExitOnEsc": true,
+      "bOverrideViewportsFromExternalConfig": true,
+      "bOverrideTransformsFromExternalConfig": true
+    },
+    "scene": {
+      "cameras": {
+        "DefaultViewPoint": {
+          "parentId": "",
+          "location": {
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
+          },
+          "rotation": {
+            "pitch": 0.0,
+            "yaw": 0.0,
+            "roll": 0.0
+          },
+          "interpupillaryDistance": 6.4,
+          "swapEyes": false,
+          "stereoOffset": "None"
+        }
+      },
+      "screens": {
+        "screen_0": {
+          "parentId": "",
+          "location": {
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
+          },
+          "rotation": {
+            "pitch": 0.0,
+            "yaw": 0.0,
+            "roll": 0.0
+          },
+          "size": {
+            "width": 1.0,
+            "height": 1.0
+          }
+        }
+      }
+    },
+    "cluster": {
+      "primaryNode": {
+        "id": "node_0"
+      },
+      "sync": {
+        "renderSyncPolicy": {
+          "type": "none",
+          "parameters": {}
+        },
+        "inputSyncPolicy": {
+          "type": "None",
+          "parameters": {}
+        }
+      },
+      "nodes": {
+        "node_0": {
+          "host": "127.0.0.1",
+          "sound": true,
+          "fullScreen": false,
+          "window": {
+            "x": 0,
+            "y": 0,
+            "w": 2560,
+            "h": 698
+          },
+          "viewports": {
+            "vp_0": {
+              "camera": "DefaultViewPoint",
+              "region": {
+                "x": 0,
+                "y": 0,
+                "w": 2560,
+                "h": 698
+              },
+              "projectionPolicy": {
+                "type": "mesh",
+                "parameters": {
+                  "mesh_component": "screen_0"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

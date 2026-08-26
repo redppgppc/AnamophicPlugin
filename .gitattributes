@@ -1,0 +1,4 @@
+# 배치 파일은 CRLF로 고정한다. cmd는 LF 줄바꿈 배치를 오파싱해서
+# 주석·echo 문장을 명령어로 실행하려다 깨진다(줄 경계를 못 잡음).
+*.bat text eol=crlf
+*.cmd text eol=crlf

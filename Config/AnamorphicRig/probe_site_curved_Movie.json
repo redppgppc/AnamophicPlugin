@@ -1,0 +1,64 @@
+{
+  "bent_wall": true,
+  "face_b_m": 36.536502838134766,
+  "face_a_m": 36.536502838134766,
+  "wall_height_m": 20.0,
+  "bend_deg": 90.0,
+  "fillet_r_m": 2.5,
+  "convex": true,
+  "base_m": 5.0,
+  "eye_dist_m": 35.0,
+  "eye_offset_m": 0.0,
+  "eye_height_m": 1.600000023841858,
+  "anchor_seam": 1,
+  "rotate_deg": 0.0,
+  "pitch_mm": 7.800000190734863,
+  "video_passthrough": true,
+  "exposure_bias": 0.0,
+  "hide_screen_messages": true,
+  "show_floor": true,
+  "arc_seg": 24,
+  "face_seg": 8,
+  "seg_v": 4,
+  "flip_v": true,
+  "flip_winding": false,
+  "warn_grazing_deg": 20.0,
+  "warn_band_pct": 60.0,
+  "warn_density_ratio": 2.0,
+  "video_path": "Content/Movies/TestPattern_curved.mp4",
+  "panels": [
+    {
+      "name": "screen_left",
+      "width_m": 0.3540000021457672,
+      "height_m": 0.39800000190734863,
+      "center_z_m": -0.04600000008940697,
+      "auto_res": false,
+      "res_x": 1280,
+      "res_y": 1440,
+      "detached": false,
+      "free_x_m": 0.0,
+      "free_y_m": 0.0,
+      "free_yaw": 0.0
+    },
+    {
+      "name": "screen_right",
+      "width_m": 0.7080000042915344,
+      "height_m": 0.39800000190734863,
+      "center_z_m": -0.04600000008940697,
+      "auto_res": false,
+      "res_x": 2560,
+      "res_y": 1440,
+      "detached": false,
+      "free_x_m": 0.0,
+      "free_y_m": 0.0,
+      "free_yaw": 0.0
+    }
+  ],
+  "seams": [
+    {
+      "turn_deg": 90.0,
+      "convex": true,
+      "gap_m": 0.0
+    }
+  ]
+}

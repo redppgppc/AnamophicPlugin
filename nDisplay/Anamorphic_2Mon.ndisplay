@@ -1,0 +1,129 @@
+{
+  "nDisplay": {
+    "description": "Anamorphic rig, 2 panel(s)",
+    "version": "5.00",
+    "assetPath": "/Game/Anamorphic/NDC_Anamorphic_2Mon.NDC_Anamorphic_2Mon",
+    "misc": {
+      "bFollowLocalPlayerCamera": false,
+      "bExitOnEsc": true,
+      "bOverrideViewportsFromExternalConfig": true,
+      "bOverrideTransformsFromExternalConfig": true
+    },
+    "scene": {
+      "cameras": {
+        "DefaultViewPoint": {
+          "parentId": "",
+          "location": {
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
+          },
+          "rotation": {
+            "pitch": 0.0,
+            "yaw": 0.0,
+            "roll": 0.0
+          },
+          "interpupillaryDistance": 6.4,
+          "swapEyes": false,
+          "stereoOffset": "None"
+        }
+      },
+      "screens": {
+        "screen_left": {
+          "parentId": "",
+          "location": {
+            "x": 72.5157900270019,
+            "y": -12.515790027001891,
+            "z": -4.6
+          },
+          "rotation": {
+            "pitch": 0.0,
+            "yaw": 45.0,
+            "roll": 0.0
+          },
+          "size": {
+            "width": 35.4,
+            "height": 39.8
+          }
+        },
+        "screen_right": {
+          "parentId": "",
+          "location": {
+            "x": 85.03158005400378,
+            "y": 25.031580054003783,
+            "z": -4.6
+          },
+          "rotation": {
+            "pitch": 0.0,
+            "yaw": -45.0,
+            "roll": 0.0
+          },
+          "size": {
+            "width": 70.8,
+            "height": 39.8
+          }
+        }
+      }
+    },
+    "cluster": {
+      "primaryNode": {
+        "id": "node_0"
+      },
+      "sync": {
+        "renderSyncPolicy": {
+          "type": "none",
+          "parameters": {}
+        },
+        "inputSyncPolicy": {
+          "type": "None",
+          "parameters": {}
+        }
+      },
+      "nodes": {
+        "node_0": {
+          "host": "127.0.0.1",
+          "sound": true,
+          "fullScreen": false,
+          "window": {
+            "x": 0,
+            "y": 0,
+            "w": 3840,
+            "h": 1440
+          },
+          "viewports": {
+            "vp_left": {
+              "camera": "DefaultViewPoint",
+              "region": {
+                "x": 0,
+                "y": 0,
+                "w": 1280,
+                "h": 1440
+              },
+              "projectionPolicy": {
+                "type": "mesh",
+                "parameters": {
+                  "mesh_component": "screen_left"
+                }
+              }
+            },
+            "vp_right": {
+              "camera": "DefaultViewPoint",
+              "region": {
+                "x": 1280,
+                "y": 0,
+                "w": 2560,
+                "h": 1440
+              },
+              "projectionPolicy": {
+                "type": "mesh",
+                "parameters": {
+                  "mesh_component": "screen_right"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

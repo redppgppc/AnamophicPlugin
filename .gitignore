@@ -1,0 +1,104 @@
+﻿# 의존성
+node_modules/
+.pnp
+.pnp.js
+
+# 빌드 산출물
+dist/
+build/
+out/
+.next/
+.vercel/
+
+# 환경 변수 (민감 정보 — 브리지 토큰·키 등)
+.env
+.env.*
+!.env.example
+
+# 로그
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# SVN 병행 시 메타폴더 제외
+.svn/
+
+# OS / 에디터
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+
+# 캐시
+.cache/
+*.tsbuildinfo
+.gstack/
+__pycache__/
+Document/ebook/.build/
+
+# ---------------------------------------------------------------------------
+# 언리얼 엔진
+# ---------------------------------------------------------------------------
+# 전부 엔진이 다시 만들어 내는 것들이다. 커밋하면 저장소가 수천 파일로 불어나고
+# 사람마다 내용이 달라 매번 충돌한다.
+
+# 빌드/캐시 산출물
+Binaries/
+DerivedDataCache/
+Intermediate/
+Platforms/*/Binaries/
+Platforms/*/Intermediate/
+Plugins/**/Binaries/
+Plugins/**/Intermediate/
+# 플랫폼별 아이콘·설정 등 손으로 넣은 것은 남긴다 (gitignore 는 줄 끝 주석을 못 쓴다)
+Build/
+!Build/*/
+
+# 에디터가 쓰는 작업 폴더 (자동저장, 로그, 크래시, 렌더 결과)
+# Unreal Engine 임시 및 캐시 폴더 제외
+Intermediate/
+Binaries/
+Saved/
+DerivedDataCache/
+.vs/
+*.VC.db
+*.sln
+
+# 비주얼 스튜디오 / IDE
+.vs/
+.vscode/
+*.sln
+*.suo
+*.sdf
+*.opensdf
+*.opendb
+*.VC.db
+*.VC.opendb
+*.xcodeproj/
+*.xcworkspace/
+
+# 언리얼이 만드는 임시 파일
+*.uprojectdirs
+*.tmp
+*.autosave
+*.udebugsymbols
+
+# 사용자별 에디터 설정 (사람마다 다르다)
+Config/*Editor*User*.ini
+Config/DefaultEditorPerProjectUserSettings.ini
+
+# ---------------------------------------------------------------------------
+# 이 프로젝트에서 생성되는 것
+# ---------------------------------------------------------------------------
+# 영상은 '영상 변환' 이 언제든 다시 만든다. 원본만 있으면 된다.
+Content/Movies/*_curved.mp4
+Content/Movies/*_wall.mp4
+Content/Movies/*_eye.mp4
+Content/Movies/*merged.mp4
+Saved/MovieRenders/
+
+# 워프 맵 캐시는 TEMP 에 쌓이지만 혹시 몰라
+arwarp_*.pgm
+areye_*.pgm
