@@ -32,6 +32,30 @@ def sizes(wall, res_w=2560):
     return out
 
 
+def content_spec(wall, warn_band=60.0):
+    """영상 만드는 쪽에 그대로 넘길 숫자. -> (줄 목록, 경고 목록).
+
+    아나모픽 변환은 **벽의 기하만** 되돌린다. 영상 안에 이미 찍혀 있는 원근은 못 고친다.
+    그래서 3D 툴에서 콘텐츠를 만들 때 쓰는 카메라 화각이 여기 값과 달라지면
+    convert() 가 잘라서 맞추고, 잘린 것은 눈에 띄어도 원근이 어긋난 것은 안 띈다.
+
+    화각은 Xv = y/x 가 탄젠트이므로 경계값에 atan 을 씌워 각도로 되돌린다.
+    """
+    plan = V.Plan(wall)
+    x0, x1, z0, z1, _, aspect, band = plan.plane()
+    h_fov = math.degrees(math.atan(x1) - math.atan(x0))
+    v_fov = math.degrees(math.atan(z1) - math.atan(z0))
+    vw, vh = plan.virtual_size()
+    msg, warn = band_warning(band, warn_band)
+    out = ["콘텐츠 제작 사양  (영상 만드는 쪽에 그대로 전달할 것)",
+           "  카메라 수평 화각  %.2f deg" % h_fov,
+           "  카메라 수직 화각  %.2f deg" % v_fov,
+           "  권장 렌더 크기    %d x %d px  (비율 %.3f : 1)" % (vw, vh, aspect),
+           "  " + msg,
+           "  주의: 이 화각으로 만들지 않으면 변환에서 잘리고 원근이 어긋난다"]
+    return out, ([warn] if warn else [])
+
+
 def _ratio_name(r):
     """가장 가까운 흔한 비율 이름. 감이 잡히라고 붙인다."""
     known = [(16 / 9.0, "16:9"), (21 / 9.0, "21:9"), (32 / 9.0, "32:9"),
@@ -47,6 +71,9 @@ def summarize(wall, warn_grazing=20.0, warn_band=60.0, warn_density=2.0, res_w=2
     lo, hi = G.span_deg(wall)
     try:
         lines.extend(sizes(wall, res_w) + [""])
+        spec, spec_warns = content_spec(wall, warn_band)
+        lines.extend(spec + [""])
+        warns.extend(spec_warns)
     except ValueError as e:      # 패널마다 높이가 다르면 전개 직사각형이 안 나온다
         lines.append("화면 크기  전개 %s (세로 크기가 패널마다 달라 비율을 낼 수 없음)" % _fmt_m(W))
         warns.append(str(e).split(chr(10))[0])

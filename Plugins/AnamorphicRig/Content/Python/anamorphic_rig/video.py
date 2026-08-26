@@ -160,6 +160,45 @@ def _pgm16(path, w, h, rows):
             f.write(a.tobytes())
 
 
+def probe_size(src):
+    """원본 해상도. ffprobe 가 없거나 못 읽으면 None. 변환을 막지는 않는다."""
+    exe = shutil.which("ffprobe")
+    if not exe:
+        return None
+    try:
+        out = subprocess.run(
+            [exe, "-v", "error", "-select_streams", "v:0",
+             "-show_entries", "stream=width,height", "-of", "csv=p=0:s=x", src],
+            capture_output=True, text=True, timeout=30)
+        w, h = out.stdout.strip().split("x")[:2]
+        return int(w), int(h)
+    except Exception:
+        return None
+
+
+def crop_note(src, vw, vh):
+    """원본을 가상 평면에 채워 넣을 때 얼마나 잘려 나가는지. -> 줄 목록.
+
+    convert() 는 force_original_aspect_ratio=increase 로 채운 뒤 crop 한다. 비율이
+    다르면 조용히 잘린다. 잘린 것은 눈에 띄지만 원근이 어긋난 것은 눈에 안 띄므로,
+    적어도 얼마나 잘렸는지는 남겨 둔다.
+    """
+    got = probe_size(src)
+    if not got:
+        return []
+    sw, sh = got
+    sa, va = sw / float(sh), vw / float(vh)
+    lines = ["원본 %dx%d (%.3f:1) -> 가상 평면 %dx%d (%.3f:1)" % (sw, sh, sa, vw, vh, va)]
+    if abs(sa - va) < 1e-4:
+        lines.append("  비율이 같다. 잘려 나가는 부분 없음")
+        return lines
+    axis, lost = ("가로", 1.0 - va / sa) if sa > va else ("세로", 1.0 - sa / va)
+    lines.append("  %s %.1f%% 가 잘려 나간다.%s"
+                 % (axis, lost * 100.0,
+                    "  권장 렌더 크기로 다시 뽑으면 손실이 없다" if lost > 0.10 else ""))
+    return lines
+
+
 def _run(args):
     assert shutil.which("ffmpeg"), "ffmpeg 이 PATH 에 없다. 설치하고 PATH 에 넣을 것"
     subprocess.run(["ffmpeg", "-y"] + args, check=True)
@@ -187,6 +226,8 @@ def convert(plan, src, out_dir, curved=True, log=print):
 
     log("워프 맵 준비 중...")
     xm, ym, vw, vh = plan.warp_maps()
+    for line in crop_note(src, vw, vh):
+        log(line)
     graph = (
         # 1) 원본을 가상 평면 비율로 채워 자르고  2) 벽 모양으로 되찍고  3) 출력 크기로 축소
         "[0:v]scale=%d:%d:force_original_aspect_ratio=increase,crop=%d:%d,setsar=1[v];"
