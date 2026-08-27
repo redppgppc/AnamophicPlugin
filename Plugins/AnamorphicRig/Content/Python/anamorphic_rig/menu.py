@@ -9,6 +9,8 @@ import unreal
 from . import build as B
 from . import config as CF
 from . import presets as PR
+from . import blend as BL
+from . import projector as PJ
 from . import preview as PV
 from . import report as R
 from . import settings as S
@@ -230,6 +232,74 @@ def act_check(s=None):
     _dialog("형상 점검", "\n".join(lines + ([""] + ["! " + w for w in warns] if warns else [])))
 
 
+def act_projectors(s=None):
+    """프로젝터 배치를 검토한다. 설치 전에 배치를 정하는 용도다.
+
+    실제 워프 맵은 여기서 만들지 않는다. 그건 카메라 캘리브레이션의 몫이고,
+    이 계산은 대수·위치·담당 구간·이음매 자리를 정하는 데 쓴다.
+    """
+    s = current_settings() if s is None else s
+    projs = S.to_projectors(s)
+    if not projs:
+        raise RuntimeError(
+            "프로젝터가 정의되지 않았습니다.\n"
+            "설정 편집 > 08 프로젝터 > 프로젝터 목록 에 추가하세요.\n"
+            "LED 벽이면 이 기능은 쓰지 않습니다.")
+    wall = S.to_wall(s)
+    lines, warns = PJ.analyze(wall, projs, s.warn_grazing_deg, s.warn_blend_pct)
+    for l in lines:
+        _log(l)
+    for w in warns:
+        unreal.log_warning("[AnamorphicRig] " + w)
+    _dialog("프로젝터 배치 점검",
+            "\n".join(lines + ([""] + ["! " + w for w in warns] if warns else ["", "경고 없음"])))
+
+    # 겹침을 밀도 교차점으로 옮길 여지가 있으면 제안한다. 폭은 그대로 두고 위치만 민다.
+    spans, notes = BL.suggest_spans(wall, projs)
+    diff = max(abs(a - p.u0) + abs(b - p.u1) for p, (a, b) in zip(projs, spans))
+    if diff < 1.0:
+        _log("이음매가 이미 밀도 교차점에 있습니다")
+        return
+    cur = "\n".join("  %-8s %6.3f ~ %6.3f m" % (p.name, p.u0 / 100.0, p.u1 / 100.0)
+                    for p in projs)
+    new = "\n".join("  %-8s %6.3f ~ %6.3f m" % (p.name, a / 100.0, b / 100.0)
+                    for p, (a, b) in zip(projs, spans))
+    msg = ("겹침을 밀도 교차점으로 옮기면 램프가 도는 동안 선명도가 변하지 않습니다.\n"
+           "겹침 폭은 그대로 두고 위치만 옮깁니다.\n\n지금:\n%s\n\n제안:\n%s\n\n%s\n\n"
+           "설정에 적용할까요?" % (cur, new, "\n".join(notes)))
+    if not _ask("이음매 자동 산출", msg):
+        return
+    for r, (a, b) in zip(sorted(s.projectors, key=lambda q: q.span_start_m), spans):
+        r.set_editor_property("span_start_m", a / S.M)
+        r.set_editor_property("span_end_m", b / S.M)
+    _log("담당 구간을 갱신했습니다. 저장을 눌러야 프리셋에 남습니다")
+    _dialog("이음매 자동 산출", "담당 구간을 갱신했습니다.\n\n%s\n\n"
+                             "'저장' 을 눌러야 프리셋 파일에 남습니다." % new)
+
+
+def act_blend(s=None):
+    """프로젝터마다 알파 블렌드 맵을 16비트 PGM 으로 만든다.
+
+    겹침 구간에서 두 대의 알파 합이 항상 1 이 되도록 정규화한다. 램프 두 개를 그냥
+    마주 놓으면 합이 1 이 안 되어 겹침이 밝거나 어둡게 뜬다.
+    """
+    s = current_settings() if s is None else s
+    projs = S.to_projectors(s)
+    if len(projs) < 2:
+        raise RuntimeError("프로젝터가 2대 이상이라야 블렌딩할 것이 있습니다")
+    wall = S.to_wall(s)
+    lo, hi = BL.check_sum(wall, projs, s.blend_gamma)
+    if abs(lo - 1.0) > 1e-6 or abs(hi - 1.0) > 1e-6:
+        raise RuntimeError("알파 합이 1 이 아닙니다 (%.6f ~ %.6f). 담당 구간에 구멍이 "
+                           "있는지 확인하세요." % (lo, hi))
+    out = os.path.join(ROOT, "nDisplay", "blend")
+    made = BL.write_maps(wall, projs, out, s.blend_gamma, _log)
+    _log("알파 합 검사 통과 (%.6f ~ %.6f)" % (lo, hi))
+    if _ask("블렌드 맵", "%d 장을 만들었습니다.\n\n%s\n\n폴더를 열까요?"
+            % (len(made), "\n".join(os.path.basename(m) for m in made))):
+        _open(out)
+
+
 def act_preview(s=None):
     """평면도를 그린다. 이미 떠 있으면 지운다 (카메라도 원래 자리로 되돌린다)."""
     if PV.is_drawn():
@@ -274,6 +344,100 @@ def act_launch(s=None):
     _log("작업표시줄 자동 숨김과 디스플레이 배율 100%% 를 확인할 것")
     import subprocess
     subprocess.Popen(args)
+
+
+def _proj_setup(s):
+    """프로젝터 변환에 필요한 것들. -> (wall, projs, plan, 블렌드 맵 경로 목록 또는 None)."""
+    projs = S.to_projectors(s)
+    if not projs:
+        raise RuntimeError("프로젝터가 정의되지 않았습니다.\n"
+                           "설정 편집 > 08 프로젝터 > 프로젝터 목록 에 추가하세요.")
+    wall = S.to_wall(s)
+    bad = wall.check()
+    if bad:
+        raise RuntimeError("형상이 잘못됨:\n  " + "\n  ".join(bad))
+    _, warns = PJ.analyze(wall, projs, s.warn_grazing_deg, s.warn_blend_pct)
+    if warns:
+        if not _ask("프로젝터 영상 변환",
+                    "배치에 경고가 %d 개 있습니다.\n\n%s\n\n그래도 변환할까요?"
+                    % (len(warns), "\n".join("! " + w for w in warns))):
+            return None
+    maps = None
+    if len(projs) > 1 and s.bake_blend:
+        lo, hi = BL.check_sum(wall, projs, s.blend_gamma)
+        if abs(lo - 1.0) > 1e-6 or abs(hi - 1.0) > 1e-6:
+            raise RuntimeError("알파 합이 1 이 아닙니다 (%.6f ~ %.6f)" % (lo, hi))
+        maps = BL.write_maps(wall, projs, os.path.join(ROOT, "nDisplay", "blend"),
+                             s.blend_gamma, _log)
+    return wall, projs, V.Plan(wall), maps
+
+
+def _proj_out():
+    d = os.path.join(movies_dir(), "proj")
+    os.makedirs(d, exist_ok=True)
+    return d
+
+
+def act_proj_from_source(s=None):
+    """원본에서 프로젝터별 영상을 만든다. 아나모픽과 프로젝터 워프를 한 번에 건다.
+
+    두 왜곡을 파이썬에서 합성하므로 중간 '벽 이미지'가 실체로 생기지 않는다.
+    프로젝터가 벽에 만드는 밀도를 담으려면 벽 이미지가 1만 픽셀을 넘는데, 합성하면
+    그 래스터가 디스크에도 메모리에도 안 생기고 양자화 손실도 없다.
+    """
+    s = current_settings() if s is None else s
+    got = _proj_setup(s)
+    if got is None:
+        return
+    wall, projs, plan, maps = got
+    src = _pick_file("변환할 원본 영상 고르기")
+    if not src:
+        return
+    out = _proj_out()
+    made = [V.convert_projector(wall, projs, p, plan, src, out,
+                                alpha=(maps[i] if maps else None), log=_log)
+            for i, p in enumerate(projs)]
+    _finish_proj(made, out, maps)
+
+
+def act_proj_from_wall(s=None):
+    """이미 아나모픽이 걸린 벽 영상(_curved.mp4)에서 프로젝터별 영상을 만든다.
+
+    아나모픽을 다시 걸지 않는다. 입력 해상도가 그대로 상한이라, 원본이 있으면
+    '원본에서' 쪽이 화질이 낫다.
+    """
+    s = current_settings() if s is None else s
+    got = _proj_setup(s)
+    if got is None:
+        return
+    wall, projs, plan, maps = got
+    src = _pick_file("이미 변환된 벽 영상 고르기")
+    if not src:
+        return
+    size = V.probe_size(src)
+    if size:
+        need, ratio = V.wall_image_shortfall(wall, projs, size[0])
+        if ratio > 1.05:
+            if not _ask("프로젝터 영상 변환",
+                        "벽 영상이 가로 %d px 인데 프로젝터를 다 살리려면 %d px 가 "
+                        "필요합니다 (%.1f 배 부족).\n\n가장 촘촘한 구간에서 %.0f%% 만 "
+                        "나옵니다. 원본이 있으면 '원본에서' 쪽이 낫습니다.\n\n"
+                        "그래도 진행할까요?" % (size[0], need, ratio, 100.0 / ratio)):
+                return
+    out = _proj_out()
+    made = [V.convert_projector_from_wall(wall, projs, p, plan, src, out,
+                                          alpha=(maps[i] if maps else None), log=_log)
+            for i, p in enumerate(projs)]
+    _finish_proj(made, out, maps)
+
+
+def _finish_proj(made, out, maps):
+    note = ("블렌드를 구웠습니다." if maps else
+            "블렌드는 굽지 않았습니다. nDisplay/blend 의 알파 맵을 재생 쪽에서 곱하세요.")
+    _log(note)
+    if _ask("프로젝터 영상 변환", "%d 장을 만들었습니다.\n\n%s\n\n%s\n\n폴더를 열까요?"
+            % (len(made), "\n".join(os.path.basename(m) for m in made), note)):
+        _open(out)
 
 
 def act_convert_curved():
@@ -402,6 +566,14 @@ GROUPS = [
         ("Plan", "평면도 보기 / 지우기", "에디터 뷰포트에 평면도를 그린다. 다시 누르면 지운다", act_preview),
         ("Build", "벽 만들기", "워프 메시와 리그를 현재 레벨에 만든다", act_build),
         ("Launch", "클러스터 실행", "nDisplay 창을 별도 프로세스로 띄운다", act_launch),
+        ("Proj", "프로젝터 배치 점검", "담당 구간·화각·입사각·겹침·밀도 교차점을 낸다", act_projectors),
+        ("Blend", "블렌드 맵 만들기", "프로젝터별 알파 맵을 nDisplay/blend 에 쓴다", act_blend),
+    ]),
+    ("Video2", "프로젝터 영상", [
+        ("PSrc", "프로젝터 영상 변환 (원본에서)",
+         "아나모픽과 프로젝터 워프를 한 번에. 중간본이 없어 화질이 가장 좋다", act_proj_from_source),
+        ("PWall", "프로젝터 영상 변환 (벽 영상에서)",
+         "이미 만들어진 _curved.mp4 에서. 그 해상도가 상한이 된다", act_proj_from_wall),
     ]),
     ("Video", "영상", [
         ("Curved", "영상 변환 (아나모픽)", "받은 영상을 벽 형상에 맞게 역왜곡한다", act_convert_curved),

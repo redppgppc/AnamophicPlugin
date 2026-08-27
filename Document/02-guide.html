@@ -300,10 +300,11 @@ hr { border: 0; border-top: 1px solid var(--hairline-2); margin: 2.5rem 0; }
     <li><a href="#s7"><span class="n">07</span><span>스위트스팟이 정면이 아닐 때</span></a></li>
     <li><a href="#s8"><span class="n">08</span><span>영상 변환</span></a></li>
     <li><a href="#s9"><span class="n">09</span><span>아나모픽은 어떻게 계산되나</span></a></li>
-    <li><a href="#s10"><span class="n">10</span><span>다중 패널 영상 출력</span></a></li>
-    <li><a href="#s11"><span class="n">11</span><span>실전에서 걸린 것들</span></a></li>
-    <li><a href="#s12"><span class="n">12</span><span>치트시트</span></a></li>
-    <li><a href="#s13"><span class="n">13</span><span>관련 문서</span></a></li>
+    <li><a href="#s10"><span class="n">10</span><span>프로젝터로 쏠 때</span></a></li>
+    <li><a href="#s11"><span class="n">11</span><span>다중 패널 영상 출력</span></a></li>
+    <li><a href="#s12"><span class="n">12</span><span>실전에서 걸린 것들</span></a></li>
+    <li><a href="#s13"><span class="n">13</span><span>치트시트</span></a></li>
+    <li><a href="#s14"><span class="n">14</span><span>관련 문서</span></a></li>
   </ol>
 </nav>
 
@@ -436,12 +437,24 @@ hr { border: 0; border-top: 1px solid var(--hairline-2); margin: 2.5rem 0; }
       <tr><td><strong>평면도 보기 / 지우기</strong></td><td>에디터 뷰포트에 평면도를 그린다. 다시 누르면 지우고 카메라도 되돌린다</td></tr>
       <tr><td><strong>벽 만들기</strong></td><td>워프 메시 + nDisplay 리그 + 바닥 + PlayerStart 를 현재 레벨에 만든다</td></tr>
       <tr><td>클러스터 실행</td><td>nDisplay 창을 별도 프로세스로 띄운다</td></tr>
+      <tr><td>프로젝터 배치 점검</td><td>화각·입사각·밀도·겹침·교차점. 개선안을 제안한다 (10절)</td></tr>
+      <tr><td>블렌드 맵 만들기</td><td>프로젝터별 알파 맵을 <code>nDisplay/blend</code> 에 쓴다</td></tr>
     </tbody>
   </table></div>
   <p>
     같은 네 가지가 설정 탭 안 <code>실행</code> 항목에도 버튼으로 있다. 거기서 누르면
     <strong>저장하지 않은 편집 중인 값</strong>으로 돈다. 값을 바꿔가며 바로 시험할 때 쓴다.
   </p>
+
+  <h3>프로젝터 영상</h3>
+  <p>LED 벽이면 쓰지 않는다. <code>08 프로젝터</code> 목록이 비어 있으면 전부 꺼진다.</p>
+  <div class="tablewrap"><table>
+    <thead><tr><th>항목</th><th>하는 일</th></tr></thead>
+    <tbody>
+      <tr><td><strong>프로젝터 영상 변환 (원본에서)</strong></td><td>아나모픽과 프로젝터 워프를 한 번에. 중간본이 없어 화질이 가장 좋다</td></tr>
+      <tr><td>프로젝터 영상 변환 (벽 영상에서)</td><td>이미 만든 <code>_curved.mp4</code> 에서. 그 해상도가 상한이 된다</td></tr>
+    </tbody>
+  </table></div>
 
   <h3>영상</h3>
   <div class="tablewrap"><table>
@@ -1208,9 +1221,285 @@ md.set_vertex_instance_uv(inst, unreal.Vector2D(u / W, 1.0 - f), 0)
   가로 15.9% 가 잘려 나간다.  권장 렌더 크기로 다시 뽑으면 손실이 없다</pre></div>
 </section>
 
+<!-- 11 -->
 <!-- 10 -->
 <section id="s10" class="col col--wide">
-  <div class="h2row"><span class="n">10</span><h2>다중 패널 영상 출력</h2></div>
+  <div class="h2row"><span class="n">10</span><h2>프로젝터로 쏠 때</h2></div>
+  <p>
+    여기까지는 LED 벽이 전제였다. 프로젝터는 <strong>왜곡이 한 겹 더 붙는다.</strong>
+    다른 물건이 아니라, 같은 리그에 층이 하나 더 쌓인 구조다.
+  </p>
+
+  <h3>10.1 무엇이 다른가</h3>
+  <div class="tablewrap"><table>
+    <thead><tr><th></th><th>화소가 어디 고정되어 있나</th><th>신경 쓸 각도</th></tr></thead>
+    <tbody>
+      <tr><td><strong>LED</strong></td><td><strong>벽면</strong>에 박혀 있다</td><td>관람자 각도 하나</td></tr>
+      <tr><td><strong>프로젝터</strong></td><td><strong>프로젝터의 각도 격자</strong>에 박혀 있다</td><td>관람자 + 프로젝터 <strong>둘</strong></td></tr>
+    </tbody>
+  </table></div>
+  <p>
+    LED 는 관람 각도가 나빠도 화소 자체는 벽에 그대로 있고 눈에서만 압축된다. 프로젝터는
+    벽에 떨어지는 순간 <strong>이미 퍼진 채로</strong> 도착하고, 그것을 관람자가 다시 각도로
+    압축해서 본다.
+  </p>
+  <div class="note">
+    <span class="note-label">층 분리</span>
+    <p>
+      <code>콘텐츠 →[관람자 기준]→ 벽 이미지 →[프로젝터 기준]→ 프로젝터 프레임</code><br>
+      관람 시점은 프로젝터가 몇 대든 <strong>항상 하나</strong>다. 그래서 아나모픽 계산은
+      프로젝터 대수와 무관하고, <strong>배치를 바꿔도 콘텐츠는 다시 만들지 않는다.</strong>
+      이 분리를 지키는 게 설계의 핵심이다.
+    </p>
+  </div>
+
+  <h3>10.2 화소가 늘어나는 진짜 이유는 거리가 아니다</h3>
+  <p>
+    “멀어져서 퍼진다” 는 절반만 맞다. 거리는 <code>1/d²</code> 로 들어오지만
+    <strong>입사각은 <code>1/cos</code> 로 들어와</strong> 코너 근처에서 폭발한다.
+    실측 예에서 거리 기여는 5.6 배인데 입사각까지 곱하면 13.3 배가 됐다.
+  </p>
+  <div class="tablewrap"><table>
+    <thead><tr><th>입사각</th><th>가로</th><th>세로</th><th>화소 모양</th></tr></thead>
+    <tbody>
+      <tr><td>90°</td><td>1.00×</td><td>1.00×</td><td>정사각형</td></tr>
+      <tr><td>45°</td><td>1.41×</td><td>1.00×</td><td>가로로 1.4배</td></tr>
+      <tr><td>20°</td><td>2.92×</td><td>1.00×</td><td>가로로 3배</td></tr>
+      <tr><td>5°</td><td>11.47×</td><td>1.00×</td><td>완전히 뭉개짐</td></tr>
+    </tbody>
+  </table></div>
+  <p>
+    <strong>세로는 입사각에 눌리지 않는다</strong> (프로젝터가 벽 높이 가운데면). 그래서
+    “상하좌우 스트레칭” 이 아니라 <strong>가로로만</strong> 늘어난 직사각형 화소가 된다.
+  </p>
+
+  <h3>10.3 대수는 고르는 게 아니라 떨어져 나온다</h3>
+  <div class="block"><pre>밝기 하한    면적 x 목표 휘도 / 기계당 광량
+해상도 하한  관람 거리에서 화소가 안 보일 조건
+화각 가능성  렌즈와 뒤 공간이 되는가
+
+대수 = max(위 셋)</pre></div>
+  <p>순서가 있다. <strong>밝기가 대개 먼저 막히고</strong>, 그다음 해상도, 화각은 마지막에 배치로 조정한다.</p>
+  <div class="note note--tip">
+    <span class="note-label">대수를 늘린다는 것의 정체</span>
+    <p>
+      <strong>문제를 없애는 게 아니라 종류를 바꾸는 것이다.</strong> 각도 문제를 이음매 문제로
+      교환한다. 각도 문제는 물리적이라 안 풀리고(없는 해상도는 못 만든다), 이음매 문제는
+      기술적이라 캘리브레이션으로 풀린다. 그래서 규모가 커지면 항상 대수를 늘리는 쪽으로 간다.
+    </p>
+  </div>
+
+  <h3>10.4 이음매를 어디 둘 것인가</h3>
+  <p>이 절이 프로젝터 설계의 핵심이다. 조건이 셋이고, 셋이 항상 같은 자리를 가리키지 않는다.</p>
+  <div class="tablewrap"><table>
+    <thead><tr><th></th><th>조건</th><th>이유</th></tr></thead>
+    <tbody>
+      <tr><td>1</td><td><strong>평면 위에 있을 것</strong></td><td>곡률이 변하는 자리(필렛 접점, 패널 이음매)에서 블렌딩하면 워프 오차가 증폭되고 밝기가 끊긴다. <strong>절대 조건</strong></td></tr>
+      <tr><td>2</td><td>띠 폭을 확보할 것</td><td>알파 램프가 돌 물리적 폭 + 시공 오차 흡수</td></tr>
+      <tr><td>3</td><td>밀도 교차점에 둘 것</td><td>두 대의 화소 밀도가 같아야 램프가 도는 동안 선명도가 안 변한다</td></tr>
+    </tbody>
+  </table></div>
+
+  <h4>필렛 전담은 틀렸다</h4>
+  <figure>
+    <div class="dia">
+    <svg viewBox="0 0 640 300" role="img"
+         aria-label="벽을 펴서 본 담당 구간. 필렛 전담은 이음매가 접점에 얹히고 겹침이 없다. 가로지르기는 접점을 프로젝터 안쪽에 두고 이음매가 평면 한가운데에 온다">
+      <!-- 전개 띠 -->
+      <g class="hair" stroke-width="1">
+        <line x1="40" y1="40" x2="600" y2="40"/>
+      </g>
+      <rect x="40" y="30" width="250" height="20" fill="none" stroke="var(--wall)" stroke-width="2"/>
+      <rect x="290" y="30" width="60" height="20" fill="var(--normal-soft)" stroke="var(--normal)" stroke-width="2"/>
+      <rect x="350" y="30" width="250" height="20" fill="none" stroke="var(--wall)" stroke-width="2"/>
+      <text class="lab-sm" x="165" y="24" text-anchor="middle">왼쪽 평면</text>
+      <text class="lab-sm warnT" x="320" y="24" text-anchor="middle">필렛</text>
+      <text class="lab-sm" x="475" y="24" text-anchor="middle">오른쪽 평면</text>
+      <text class="mono" x="290" y="64" text-anchor="middle">T1</text>
+      <text class="mono" x="350" y="64" text-anchor="middle">T2</text>
+      <text class="lab-sm" x="320" y="78" text-anchor="middle">접점 (곡률이 점프한다)</text>
+
+      <!-- 전담 -->
+      <text class="lab-key spotT" x="40" y="112">✗ 필렛 전담</text>
+      <g stroke-width="6" stroke-linecap="butt" fill="none">
+        <line stroke="var(--wall)" x1="40" y1="132" x2="288" y2="132"/>
+        <line stroke="var(--normal)" x1="292" y1="132" x2="348" y2="132"/>
+        <line stroke="var(--wall)" x1="352" y1="132" x2="600" y2="132"/>
+      </g>
+      <text class="mono" x="164" y="150" text-anchor="middle">L</text>
+      <text class="mono" x="320" y="150" text-anchor="middle">M</text>
+      <text class="mono" x="476" y="150" text-anchor="middle">R</text>
+      <line class="hair-d" x1="290" y1="50" x2="290" y2="158" stroke-width="1"/>
+      <line class="hair-d" x1="350" y1="50" x2="350" y2="158" stroke-width="1"/>
+      <text class="lab-sm spotT" x="320" y="172" text-anchor="middle">이음매가 접점 위 · 겹침 0 · 담당도 불균형</text>
+
+      <!-- 가로지르기 -->
+      <text class="lab-key wallT" x="40" y="212">✓ 가로지르기</text>
+      <g stroke-width="6" stroke-linecap="butt" fill="none">
+        <line stroke="var(--wall)" x1="40" y1="232" x2="235" y2="232"/>
+        <line stroke="var(--normal)" x1="205" y1="242" x2="435" y2="242"/>
+        <line stroke="var(--wall)" x1="405" y1="232" x2="600" y2="232"/>
+      </g>
+      <text class="mono" x="120" y="226" text-anchor="middle">L</text>
+      <text class="mono" x="320" y="262" text-anchor="middle">M</text>
+      <text class="mono" x="520" y="226" text-anchor="middle">R</text>
+      <rect x="205" y="222" width="30" height="30" fill="var(--wall-soft)" stroke="none" opacity="0.9"/>
+      <rect x="405" y="222" width="30" height="30" fill="var(--wall-soft)" stroke="none" opacity="0.9"/>
+      <text class="lab-sm wallT" x="220" y="278" text-anchor="middle">겹침</text>
+      <text class="lab-sm wallT" x="420" y="278" text-anchor="middle">겹침</text>
+      <line class="hair-d" x1="290" y1="50" x2="290" y2="248" stroke-width="1"/>
+      <line class="hair-d" x1="350" y1="50" x2="350" y2="248" stroke-width="1"/>
+      <text class="lab-sm" x="320" y="292" text-anchor="middle">접점이 M 안쪽 · 이음매는 평면 한가운데</text>
+    </svg>
+    </div>
+    <figcaption>
+      원칙 한 줄: <strong>이음매는 형상이 변하는 곳을 피한다. 형상 변화점은 프로젝터 안쪽에 있어야 한다.</strong>
+    </figcaption>
+  </figure>
+  <p>
+    필렛을 전담시키면 이음매 2개가 모두 접점에 얹히고, 필렛은 전개 길이가 짧아
+    <strong>세 대를 샀는데 두 대만 일한다.</strong> 가로지르면 이음매가 평면 한가운데로 가고
+    담당도 고르게 나뉜다.
+  </p>
+  <p>
+    가운데 대는 필렛보다 <strong>넓어야</strong> 한다. 좁으면 이음매가 곡선 안으로 들어간다.
+    하한은 <code>필렛 + 양쪽으로 블렌딩 띠 + 시공 마진</code> 이고, 거기서 시작해 L/R 이
+    성겨서 못 버틸 때만 넓힌다.
+  </p>
+
+  <h4>밀도 교차점</h4>
+  <figure>
+    <div class="dia">
+    <svg viewBox="0 0 620 240" role="img"
+         aria-label="두 프로젝터의 화소 밀도 곡선이 교차하는 지점에 겹침 띠를 두면 램프가 도는 동안 선명도가 변하지 않는다">
+      <line class="hair" x1="50" y1="200" x2="590" y2="200" stroke-width="1"/>
+      <text class="lab-sm" x="590" y="220" text-anchor="end">전개 좌표</text>
+      <line class="hair" x1="50" y1="200" x2="50" y2="30" stroke-width="1"/>
+      <text class="lab-sm" x="46" y="40" text-anchor="end">밀도</text>
+
+      <path fill="none" stroke="var(--wall)" stroke-width="2.5"
+            d="M 60 60 C 160 70 240 120 330 185"/>
+      <path fill="none" stroke="var(--normal)" stroke-width="2.5"
+            d="M 230 190 C 300 110 340 70 420 62"/>
+      <text class="lab-key wallT" x="70" y="52">L</text>
+      <text class="lab-key warnT" x="428" y="56">M</text>
+
+      <rect x="245" y="30" width="60" height="170" fill="var(--wall-soft)" opacity="0.75"/>
+      <circle class="spotC" cx="275" cy="147" r="5"/>
+      <line class="hair-d" x1="275" y1="147" x2="275" y2="205" stroke-width="1"/>
+      <text class="lab-key spotT" x="275" y="224" text-anchor="middle">밀도 교차점</text>
+      <text class="lab-sm wallT" x="275" y="22" text-anchor="middle">겹침 띠</text>
+
+      <path class="hair" stroke-width="1" d="M 340 175 L 400 150"/>
+      <text class="lab-sm" x="406" y="148">여기에 띠를 두면</text>
+      <text class="lab-sm" x="406" y="164">램프가 도는 동안</text>
+      <text class="lab-sm" x="406" y="180">선명도가 안 변한다</text>
+    </svg>
+    </div>
+    <figcaption>
+      밀도가 다른 곳에 이음매를 두면 밝기는 맞아도 <strong>“저 부분만 흐린” 띠</strong>가 남는다.
+      밝기 계단보다 알아채기 어려워 원인을 못 찾게 된다.
+    </figcaption>
+  </figure>
+  <p>
+    <code>프로젝터 배치 점검</code> 이 교차점을 찍어 주고, 겹침 밖에 있으면 경고한다.
+    이어서 <strong>겹침 폭은 그대로 두고 위치만</strong> 교차점으로 옮기는 안을 제안한다
+    (담당이 바뀌면 프로젝터 위치도 따라 움직이므로 수렴할 때까지 반복한다).
+  </p>
+
+  <h3>10.5 프레임 종횡비 — 놓치기 쉬운 낭비</h3>
+  <p>
+    프로젝터 프레임은 <strong>16:9 고정</strong>인데 필요 화각은 그렇지 않다. 두 비가 다르면
+    한 축은 딱 맞고 다른 축은 벽 밖으로 넘쳐 그만큼 화소를 버린다.
+  </p>
+  <div class="block"><pre>M 을 가까이 두면   필요 화각  22.7° x 45.6°
+                   16:9 프레임 63.8° x 45.6°   -> 화소 낭비 64%
+                   세로가 묶이는 축이라 가로를 통째로 버린다</pre></div>
+  <div class="note note--tip">
+    <span class="note-label">세로로 돌려 달기</span>
+    <p>
+      가운데 프로젝터는 가까이서 세로로 긴 구간을 맡으므로 대개 세로가 묶인다. 프로젝터를
+      90° 돌려 달면 프레임이 9:16 이 되어 딱 맞는다. 설정에서 <strong>해상도를
+      <code>2160 x 3840</code> 으로 넣기만</strong> 하면 그 계산이 된다.
+      실측 예에서 낭비 64% → 15%, 최악 화소 35% 개선.
+    </p>
+  </div>
+
+  <h3>10.6 블렌딩</h3>
+  <p>
+    겹침 구간에서 두 대가 <strong>같은 그림을 둘 다 그린다.</strong> 잘라 나누는 게 아니다.
+    각 뷰포트가 자기 절두체 전체를 렌더하고 알파 램프가 가장자리를 감쇠시킨다.
+  </p>
+  <div class="note note--warn">
+    <span class="note-label">정규화가 핵심</span>
+    <p>
+      램프 두 개를 그냥 마주 놓으면 <strong>합이 1 이 안 되어</strong> 겹침이 밝거나 어둡게 뜬다.
+      각 지점에서 모든 프로젝터의 가중치를 합으로 나눠야 한다. 그러면 감마를 어떻게 바꿔도
+      합은 정확히 1 로 유지된다.
+    </p>
+  </div>
+  <p>
+    <code>블렌드 커브 감마</code> 를 올리면 선명한 쪽이 더 오래 지배해, 겹침 구간의 선명도
+    저하 구간이 좁아진다. 가운데 대가 평면 구간을 비스듬히 보는 문제에 대한 대응 수단이다.
+  </p>
+
+  <h3>10.7 영상 변환 — 중간본을 만들지 않는다</h3>
+  <p>
+    벽 이미지를 실체로 두면 <strong>프로젝터가 벽에 만드는 밀도를 담아내야 해서</strong>
+    1만 픽셀을 훌쩍 넘는다. 실측 예에서 14,338 px 이었고, 이 값은 <strong>축척과 무관하다</strong>
+    — 밀도(px/cm)가 오르는 만큼 길이(cm)가 줄어 곱이 같다.
+  </p>
+  <div class="block block--art"><pre>프로젝터 픽셀 ─[열→전개좌표]─&gt; 벽 (u,v) ─[아나모픽 역]─&gt; 가상 평면 픽셀
+                                  두 맵을 파이썬에서 합성
+                                  → PGM 한 쌍 (프로젝터 해상도)</pre></div>
+  <p>
+    합성하면 그 큰 래스터가 <strong>디스크에도 메모리에도 생기지 않고</strong> 양자화 손실도
+    없다. 배치를 바꿔도 맵만 다시 굽는다(수 초) — 영상은 어느 쪽이든 다시 인코딩해야 하므로
+    나눠 두는 이점이 실제로는 없다.
+  </p>
+  <div class="tablewrap"><table>
+    <thead><tr><th></th><th>원본에서</th><th>벽 영상에서</th></tr></thead>
+    <tbody>
+      <tr><td>입력</td><td>원본 영상</td><td>이미 만든 <code>_curved.mp4</code></td></tr>
+      <tr><td>거치는 왜곡</td><td>아나모픽 + 프로젝터 (합성)</td><td>프로젝터만</td></tr>
+      <tr><td>화질 상한</td><td>원본 해상도</td><td><strong>벽 영상 해상도</strong></td></tr>
+      <tr><td>쓸 때</td><td>원본이 있을 때. <strong>기본</strong></td><td>벽 영상만 받았을 때</td></tr>
+    </tbody>
+  </table></div>
+  <p>
+    벽 영상 경로는 해상도가 모자라면 미리 알려 주고 진행 여부를 묻는다.
+    실측 예에서 3840 px 짜리 벽 영상은 <strong>가장 촘촘한 구간의 27% 만</strong> 낸다.
+  </p>
+
+  <h3>10.8 도구 쓰는 순서</h3>
+  <ol class="steps">
+    <li><b>설정 편집 → 08 프로젝터</b> <span>대수만큼 추가. 담당 구간(전개 좌표), 벽에서 물러난 거리, 해상도</span></li>
+    <li><b>프로젝터 배치 점검</b> <span>화각·입사각·밀도·겹침·교차점. 개선안이 있으면 제안한다</span></li>
+    <li><b>블렌드 맵 만들기</b> <span><code>nDisplay/blend/blend_*.pgm</code>. 알파 합이 1 인지 먼저 검사한다</span></li>
+    <li class="steps-key">
+      <b>프로젝터 영상 변환 (원본에서)</b>
+      <span><code>Content/Movies/proj/</code> 에 대수만큼</span>
+    </li>
+  </ol>
+  <div class="note">
+    <span class="note-label">블렌드는 기본으로 굽지 않는다</span>
+    <p>
+      워프만 걸고 알파는 따로 남긴다. 블렌딩은 현장에서 눈으로 조정하게 되는데, 구우면
+      조정할 때마다 N장을 재인코딩해야 한다. 재생 장비가 단순 플레이어뿐이면
+      <code>블렌드를 영상에 굽기</code> 를 켠다.
+    </p>
+  </div>
+  <p>
+    <strong>실제 워프 맵은 이 계산이 최종본이 아니다.</strong> 실제 프로젝터에는 렌즈 왜곡,
+    렌즈 시프트가 있고 설치 위치도 도면과 다르다. 현장에서는 카메라 캘리브레이션
+    (VIOSO 등)이 만든 맵을 nDisplay 가 <code>mpcdi</code>/<code>pfm</code>/벤더 정책으로 읽는다.
+    이 도구는 <strong>설치 전에 배치를 정하는 용도</strong>이고, CAD 워프를 초기값으로 주면
+    캘리브레이션이 훨씬 빨리 수렴한다.
+  </p>
+</section>
+
+<section id="s11" class="col col--wide">
+  <div class="h2row"><span class="n">11</span><h2>다중 패널 영상 출력</h2></div>
   <p>
     MRQ 로 렌더하면 <strong>뷰포트마다 파일이 하나씩</strong> 나온다. 벽에 넣을 파일은 한 장이므로
     붙여야 한다.
@@ -1233,9 +1522,9 @@ md.set_vertex_instance_uv(inst, unreal.Vector2D(u / W, 1.0 - f), 0)
   </div>
 </section>
 
-<!-- 11 -->
-<section id="s11" class="col col--wide">
-  <div class="h2row"><span class="n">11</span><h2>실전에서 걸린 것들</h2></div>
+<!-- 12 -->
+<section id="s12" class="col col--wide">
+  <div class="h2row"><span class="n">12</span><h2>실전에서 걸린 것들</h2></div>
 
   <h4>한쪽 뷰포트가 텅 비어 나온다</h4>
   <p>
@@ -1335,9 +1624,9 @@ md.set_vertex_instance_uv(inst, unreal.Vector2D(u / W, 1.0 - f), 0)
   <p>작업표시줄 자동 숨김과 디스플레이 배율 100% 를 확인한다.</p>
 </section>
 
-<!-- 12 -->
-<section id="s12" class="col col--wide">
-  <div class="h2row"><span class="n">12</span><h2>치트시트</h2></div>
+<!-- 13 -->
+<section id="s13" class="col col--wide">
+  <div class="h2row"><span class="n">13</span><h2>치트시트</h2></div>
   <div class="block"><pre>설치            Plugins/AnamorphicRig/ 복사 + Python Editor Script Plugin 켜기
 설정 저장 위치  &lt;프로젝트&gt;/Config/AnamorphicRig/*.json
 변환 결과       &lt;프로젝트&gt;/Content/Movies/
@@ -1357,12 +1646,22 @@ _eye.mp4      검증용.          벽에 넣는 파일이 아님
 영상 만드는 쪽에 넘길 것  ([저장] / [형상 점검] 이 찍어 준다)
       카메라 수평·수직 화각    FOV 를 여기 맞춰야 원근이 맞는다
       권장 렌더 크기            이 크기로 뽑으면 잘림 없음
-      안전 세로 밴드            중요한 내용은 이 안에</pre></div>
+      안전 세로 밴드            중요한 내용은 이 안에
+
+프로젝터  (08 프로젝터 목록이 비어 있으면 전부 꺼짐)
+      블렌드 맵    &lt;프로젝트&gt;/nDisplay/blend/blend_*.pgm
+      변환 결과    &lt;프로젝트&gt;/Content/Movies/proj/
+      맵 캐시      %TEMP%/arproj_*.pgm, arpwall_*.pgm
+
+      이음매 3조건   평면 위 (절대) &gt; 띠 폭 확보 &gt; 밀도 교차점
+      가운데 대      필렛을 가로지른다. 전담시키지 않는다
+      세로가 묶이면  해상도를 2160x3840 으로 (프로젝터를 90도 돌려 단다)
+      블렌드         기본은 안 굽는다. 현장에서 조정하게 된다</pre></div>
 </section>
 
-<!-- 13 -->
-<section id="s13" class="col col--wide">
-  <div class="h2row"><span class="n">13</span><h2>관련 문서</h2></div>
+<!-- 14 -->
+<section id="s14" class="col col--wide">
+  <div class="h2row"><span class="n">14</span><h2>관련 문서</h2></div>
   <div class="tablewrap"><table>
     <thead><tr><th>문서</th><th>내용</th></tr></thead>
     <tbody>

@@ -82,6 +82,30 @@ class ARSeam(unreal.StructBase):
                                            ToolTip="도면에서 읽은 각. 0 이면 일직선"))
 
 
+@unreal.ustruct()
+class ARProjector(unreal.StructBase):
+    """프로젝터 한 대. 담당 구간은 겹침을 포함한 실제 투사 범위다."""
+    res_y = unreal.uproperty(int, meta=_m("프로젝터", 80, DisplayName="세로 (px)"))
+    res_x = unreal.uproperty(int, meta=_m("프로젝터", 70, DisplayName="가로 (px)"))
+    height_m = unreal.uproperty(float, meta=_m("프로젝터", 60,
+        DisplayName="관람 바닥에서 높이 (m)",
+        ToolTip="0 이면 벽 세로 한가운데. 벽 중앙을 벗어나면 세로 입사각이 생긴다"))
+    free_y_m = unreal.uproperty(float, meta=_m("프로젝터", 50, DisplayName="평면 Y (m)",
+                                               EditCondition="place_free"))
+    free_x_m = unreal.uproperty(float, meta=_m("프로젝터", 40, DisplayName="평면 X (m)",
+                                               EditCondition="place_free"))
+    place_free = unreal.uproperty(bool, meta=_m("프로젝터", 30, DisplayName="좌표 직접 지정",
+        ToolTip="끄면 담당 구간 한가운데의 벽 법선에서 물러난 거리로 배치한다"))
+    back_m = unreal.uproperty(float, meta=_m("프로젝터", 20, DisplayName="벽에서 물러난 거리 (m)",
+        ClampMin="0.1", EditCondition="!place_free",
+        ToolTip="담당 구간 한가운데의 법선을 따라 뒤로. 멀수록 화각이 좁고 입사각이 균일해진다"))
+    span_end_m = unreal.uproperty(float, meta=_m("프로젝터", 15, DisplayName="담당 끝 (m)",
+        ToolTip="전개 좌표. 옆 프로젝터와 겹치도록 넉넉히 준다"))
+    span_start_m = unreal.uproperty(float, meta=_m("프로젝터", 12, DisplayName="담당 시작 (m)",
+        ToolTip="전개 좌표. 왼쪽 끝이 0"))
+    name = unreal.uproperty(str, meta=_m("프로젝터", 10, DisplayName="이름"))
+
+
 @unreal.uclass()
 class ARFilePick(unreal.Object):
     """파일 하나를 고르기 위한 임시 그릇. FilePath 는 찾아보기 버튼이 붙는다."""
@@ -91,6 +115,24 @@ class ARFilePick(unreal.Object):
 @unreal.uclass()
 class AnamorphicRigSettings(unreal.Object):
     """현장 하나의 설정. 값은 JSON 프리셋 파일에 저장된다 (presets.py)."""
+
+    # === 08 프로젝터 ======================================================
+    # 비워 두면 프로젝터 관련 기능이 전부 꺼진다. LED 벽이면 그대로 두면 된다.
+    warn_blend_pct = unreal.uproperty(float, meta=_m("08 프로젝터", 30,
+        DisplayName="겹침 폭 경고 (%)",
+        ToolTip="겹침이 좁은 쪽 담당의 이 비율보다 작으면 경고. 알파 램프가 돌 폭이 필요하다"))
+    bake_blend = unreal.uproperty(bool, meta=_m("08 프로젝터", 50,
+        DisplayName="블렌드를 영상에 굽기",
+        ToolTip="끄면 워프만 하고 알파는 nDisplay/blend 에 따로 남긴다. 블렌딩은 현장에서\n"
+                "눈으로 보며 조정하게 되므로 재생 쪽에서 곱하는 편이 대개 낫다.\n"
+                "재생 장비가 단순 플레이어뿐이면 켠다"))
+    blend_gamma = unreal.uproperty(float, meta=_m("08 프로젝터", 40,
+        DisplayName="블렌드 커브 감마", ClampMin="0.2", ClampMax="5.0",
+        ToolTip="1 이면 대칭 램프. 올리면 선명한 쪽이 더 오래 지배해 겹침 구간의\n"
+                "선명도 저하 구간이 좁아진다. 합은 항상 1 로 유지된다"))
+    projectors = unreal.uproperty(unreal.Array(ARProjector), meta=_m("08 프로젝터", 10,
+        DisplayName="프로젝터 목록",
+        ToolTip="관람자 기준 왼쪽부터. 비워 두면 프로젝터 검토를 하지 않는다"))
 
     # === 07 경고 기준 =====================================================
     warn_density_ratio = unreal.uproperty(float, meta=_m("07 경고 기준", 30,
@@ -256,6 +298,7 @@ class AnamorphicRigSettings(unreal.Object):
             hide_screen_messages=True, show_floor=True,
             arc_seg=24, face_seg=8, seg_v=4, flip_v=True, flip_winding=False,
             warn_grazing_deg=20.0, warn_band_pct=60.0, warn_density_ratio=2.0,
+            warn_blend_pct=8.0, blend_gamma=1.0, bake_blend=False,
         ))
 
 
@@ -265,7 +308,10 @@ SCALARS = ("bent_wall", "face_b_m", "face_a_m", "wall_height_m", "bend_deg", "fi
            "convex", "base_m", "eye_dist_m", "eye_offset_m", "eye_height_m", "anchor_seam",
            "rotate_deg", "pitch_mm", "video_path", "video_passthrough", "exposure_bias",
            "hide_screen_messages", "show_floor", "arc_seg", "face_seg", "seg_v",
-           "flip_v", "flip_winding", "warn_grazing_deg", "warn_band_pct", "warn_density_ratio")
+           "flip_v", "flip_winding", "warn_grazing_deg", "warn_band_pct", "warn_density_ratio",
+           "warn_blend_pct", "blend_gamma", "bake_blend")
+PROJ_FIELDS = ("name", "span_start_m", "span_end_m", "back_m", "place_free",
+               "free_x_m", "free_y_m", "height_m", "res_x", "res_y")
 PANEL_FIELDS = ("name", "width_m", "height_m", "panel_base_m", "auto_res", "res_x", "res_y",
                 "detached", "free_x_m", "free_y_m", "free_yaw")
 SEAM_FIELDS = ("turn_deg", "convex", "gap_m")
@@ -329,6 +375,8 @@ def to_dict(s):
     d["video_path"] = video_path_of(s)
     d["panels"] = [dict((k, p.get_editor_property(k)) for k in PANEL_FIELDS) for p in s.panels]
     d["seams"] = [dict((k, q.get_editor_property(k)) for k in SEAM_FIELDS) for q in s.seams]
+    d["projectors"] = [dict((k, r.get_editor_property(k)) for k in PROJ_FIELDS)
+                       for r in s.projectors]
     return d
 
 
@@ -356,11 +404,32 @@ def apply_dict(s, d):
             if k in sd:
                 q.set_editor_property(k, sd[k])
         seams.append(q)
-    s.panels, s.seams = panels, seams
+    projs = []
+    for rd in d.get("projectors", []):
+        r = ARProjector()
+        for k in PROJ_FIELDS:
+            if k in rd:
+                r.set_editor_property(k, rd[k])
+        projs.append(r)
+    s.panels, s.seams, s.projectors = panels, seams, projs
     return s
 
 
 # ---------------------------------------------------------------------------
+def to_projectors(s):
+    """설정 -> projector.Projector 목록. 비어 있으면 빈 목록."""
+    from . import projector as PJ
+    out = []
+    for i, r in enumerate(s.projectors):
+        out.append(PJ.Projector(
+            r.name or "proj_%d" % i, r.span_start_m * M, r.span_end_m * M,
+            back=max(0.1, r.back_m) * M,
+            pos=((r.free_x_m * M, r.free_y_m * M) if r.place_free else None),
+            dz=((r.height_m - s.eye_height_m) * M) if r.height_m else None,
+            res=(max(1, r.res_x), max(1, r.res_y))))
+    return out
+
+
 def to_wall(s):
     """설정 -> geometry 객체. 계산은 전부 geometry.py 가 한다."""
     if s.bent_wall:
