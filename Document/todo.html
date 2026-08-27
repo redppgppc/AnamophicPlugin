@@ -112,7 +112,7 @@ td code { white-space:nowrap; }
 <p class="stamp">
   최종 갱신 <b>2026-08-27</b><br>
   사용법·원리 <b>02-guide.html</b> · 도면 요구사항 <b>03-drawing-requirements.md</b> ·
-  옛 스크립트 근거 <b>00-overview.md</b>
+  <b>현장 값 입력 폼 04-site-input.html</b> · 옛 스크립트 근거 <b>00-overview.md</b>
 </p>
 
 <div class="now">
@@ -228,6 +228,12 @@ td code { white-space:nowrap; }
   <p>
     <strong>지금 계산은 전부 예시 값 위에 서 있다.</strong> 실제 도면이 오면 다시 돌려야 한다.
     필요한 항목은 <code>03-drawing-requirements.md</code> 에 정리돼 있다.
+  </p>
+  <p>
+    <strong><code>Document/04-site-input.html</code> 을 브라우저로 열면</strong> 필요한 외부 입력이
+    누구에게 받을 것인지로 묶여 있고, 그 자리에서 채우면 플러그인이 그대로 읽는 프리셋 JSON 이
+    나온다 (2026-08-27 신설). 받은 파일을 <code>Config/AnamorphicRig/</code> 에 넣으면 끝이다.
+    폼이 채우지 않은 값은 예시 기본값이 들어가고 <code>_notes.assumed</code> 에 가정값으로 남는다.
   </p>
   <div class="tablewrap"><table>
     <thead><tr><th>항목</th><th>왜 필요한가</th></tr></thead>
