@@ -36,15 +36,30 @@ class Projector(object):
         self.res = (int(res[0]), int(res[1]))
         assert self.u1 > self.u0, "%s 의 담당 구간이 비었다" % name
 
-    def place(self, wall):
-        """-> (x, y, z). 리그 원점(눈) 기준."""
+    def place(self, wall, n=64):
+        """-> (x, y, z). 리그 원점(눈) 기준.
+
+        담당 구간 한가운데에서 뒤로 물러난다. 방향은 **구간 전체 법선의 평균**이다.
+        한가운데 한 점의 법선을 쓰면 각진 코너에서 깨진다. 법선이 그 선에서 점프하므로
+        한쪽 면의 법선을 잡게 되고, 반대 면을 스치는 각으로 보게 된다. 평균을 쓰면
+        각진 코너에서는 이등분선이 나오고, 필렛 벽에서는 기존과 사실상 같다.
+        """
         if self.pos is not None:
             x, y = self.pos
         else:
             um = (self.u0 + self.u1) / 2.0
             px, py = wall.plan_point(um)
-            nx, ny = wall.plan_normal(um)      # 관람자를 등지는 방향
-            x, y = px - nx * self.back, py - ny * self.back
+            sx = sy = 0.0
+            for i in range(n + 1):
+                u = self.u0 + (self.u1 - self.u0) * i / n
+                nx, ny = wall.plan_normal(u)
+                sx += nx
+                sy += ny
+            m = math.hypot(sx, sy)
+            if m < 1e-6:                        # 구간이 반 바퀴를 넘게 감쌌다
+                sx, sy = wall.plan_normal(um)
+                m = 1.0
+            x, y = px - sx / m * self.back, py - sy / m * self.back
         z = self.dz if self.dz is not None else wall.base_z() + wall.height / 2.0
         return (x, y, z)
 

@@ -76,8 +76,42 @@ def suggest_spans(wall, projs, iters=4):
 
     spans[0][0] = 0.0                        # 양 끝은 벽 끝에 고정
     spans[-1][1] = W
-    lines.append("%d 회 반복 후 수렴" % (it + 1))
-    return [tuple(s) for s in spans], lines
+    out = [tuple(s) for s in spans]
+
+    # 반복이 수렴하지 않으면 지금보다 나빠질 수 있다. 담당이 바뀌면 프로젝터 위치도
+    # 따라 움직이고 그러면 교차점도 움직이는 되먹임이라, 항상 좋아진다는 보장이 없다.
+    now = [(p.u0, p.u1) for p in ps]
+    s_now, s_new = _score(wall, ps, now), _score(wall, ps, out)
+    if s_new >= s_now - 1e-9:
+        lines.append("지금 배치보다 나아지지 않아 그대로 둔다 (점수 %.3f -> %.3f)"
+                     % (s_now, s_new))
+        return now, lines
+    lines.append("%d 회 반복, 점수 %.3f -> %.3f" % (it + 1, s_now, s_new))
+    return out, lines
+
+
+def _score(wall, projs, spans):
+    """겹침이 얼마나 잘 놓였는가. 낮을수록 좋다.
+
+    교차점이 띠 밖으로 나가거나 띠가 평면을 벗어나면 큰 벌점. 안에 있으면 중심에서
+    벗어난 정도만 센다.
+    """
+    live = [PJ.Projector(p.name, a, b, back=p.back, pos=p.pos, dz=p.dz, res=p.res)
+            for p, (a, b) in zip(sorted(projs, key=lambda q: q.u0), spans)]
+    total = 0.0
+    for i in range(len(live) - 1):
+        a, b = live[i], live[i + 1]
+        lo, hi = b.u0, a.u1
+        if hi <= lo:
+            return 1e9                       # 겹침이 없다
+        if not PJ.in_flat(wall, lo, hi):
+            total += 100.0
+        x = PJ.density_crossing(wall, a, b, lo, hi)
+        if x is None:
+            total += 10.0                    # 띠 안에서 교차하지 않는다
+        else:
+            total += abs(x - (lo + hi) / 2.0) / (hi - lo)
+    return total
 
 
 def _flat_of(wall, u):
