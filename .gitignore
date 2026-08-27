@@ -108,3 +108,6 @@ Content/Movies/proj/
 nDisplay/blend/
 arproj_*.pgm
 arpwall_*.pgm
+
+# 개인 설정 (Claude Code 세션별. 팀 공유 아님)
+.claude/
