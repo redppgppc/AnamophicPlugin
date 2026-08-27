@@ -193,6 +193,7 @@ th, td {
   text-align: left; vertical-align: top;
   padding: 0.55rem 0.9rem 0.55rem 0;
   border-bottom: 1px solid var(--hairline-2); line-height: 1.55;
+  word-break: keep-all;   /* 한글이 낱말 도중에 끊기지 않게 */
 }
 th {
   font-weight: 600; font-size: 0.78rem; letter-spacing: 0.06em;
@@ -216,6 +217,10 @@ td code { white-space: nowrap; }
   display: block; margin-bottom: 0.3rem; color: var(--ink-2);
 }
 
+/* 처음 나오는 자리에만 붙이는 용어 설명 */
+.g { color: var(--ink-3); font-weight: 400; }
+.g::before { content: "뜻 "; font-family: var(--mono); font-size: 0.72em;
+             letter-spacing: 0.1em; color: var(--wall); }
 figure { margin: 0 0 1.5rem; }
 /* 그림. 구조선은 currentColor 라 두 테마에서 저절로 맞고,
    의미를 지닌 요소만 토큰 색을 쓴다. */
@@ -329,6 +334,9 @@ hr { border: 0; border-top: 1px solid var(--hairline-2); margin: 2.5rem 0; }
     미리 찌그러뜨린다.</strong>
   </p>
   <p>코엑스 파도(SM타운 앞 전광판)와 같은 원리다.</p>
+  <p><span class="g">아나모픽은 정해진 한 지점에서 볼 때만 형상이 바르게 보이도록 영상을 미리
+     비틀어 두는 방식이다. 그 한 지점을 스위트스팟이라 부른다. 착시는 그 자리에서 평면 화면이
+     공간처럼 보이는 현상을 말한다.</span></p>
   <figure>
     <div class="dia">
     <svg viewBox="0 0 640 360" role="img"
@@ -398,11 +406,15 @@ hr { border: 0; border-top: 1px solid var(--hairline-2); margin: 2.5rem 0; }
 4. Tools &gt; Anamorphic Rig 메뉴 확인</pre></div>
   <p>
     <code>nDisplay</code> 플러그인도 켜져 있어야 한다. 영상 변환에는
-    <strong>ffmpeg 이 PATH 에</strong> 있어야 한다.
+    <strong>ffmpeg 이 PATH 에</strong> 있어야 한다.<br>
+    <span class="g">nDisplay 는 언리얼 화면 하나를 여러 출력으로 쪼개 여러 프로젝터나 LED 에
+    뿌리게 해 주는 기능이다. ffmpeg 은 영상 파일을 변환하는 공개 도구이고, PATH 에 있어야
+    이름만으로 부를 수 있다.</span>
   </p>
   <p>
     설정값은 대상 프로젝트의 <code>Config/AnamorphicRig/*.json</code> 에 프리셋으로 저장된다.
-    플러그인 자체는 건드리지 않으므로 현장마다 프리셋만 늘려 가면 된다.
+    플러그인 자체는 건드리지 않으므로 현장마다 프리셋만 늘려 가면 된다.<br>
+    <span class="g">프리셋은 현장 하나의 설정값을 담은 파일이다. 현장 하나가 파일 하나.</span>
   </p>
 </section>
 
@@ -415,7 +427,9 @@ hr { border: 0; border-top: 1px solid var(--hairline-2); margin: 2.5rem 0; }
   <div class="tablewrap"><table>
     <thead><tr><th>항목</th><th>하는 일</th></tr></thead>
     <tbody>
-      <tr><td><strong>설정 편집</strong></td><td>설정을 <strong>도킹 탭</strong>으로 연다. 모달이 아니라 뷰포트를 보면서 만질 수 있다</td></tr>
+      <tr><td><strong>설정 편집</strong></td><td>설정을 <strong>도킹 탭</strong>으로 연다. 모달이 아니라 뷰포트를 보면서 만질 수 있다<br>
+      <span class="g">뷰포트는 화면을 그려 내는 영역 하나다. 에디터에서는 3D 를 보여 주는 창,
+      nDisplay 에서는 출력 하나를 가리킨다.</span></td></tr>
       <tr><td>프리셋 불러오기</td><td>저장된 현장 목록에서 골라 활성으로 삼는다</td></tr>
       <tr><td>프리셋 다른 이름으로 저장</td><td>지금 값을 새 이름으로 복사한다</td></tr>
     </tbody>
@@ -433,12 +447,20 @@ hr { border: 0; border-top: 1px solid var(--hairline-2); margin: 2.5rem 0; }
   <div class="tablewrap"><table>
     <thead><tr><th>항목</th><th>하는 일</th></tr></thead>
     <tbody>
-      <tr><td><strong>형상 점검</strong></td><td>크기·비율·화각·입사각과 경고를 낸다. 값 바꿀 때마다 누른다</td></tr>
+      <tr><td><strong>형상 점검</strong></td><td>크기·비율·화각·입사각과 경고를 낸다. 값 바꿀 때마다 누른다<br>
+      <span class="g">화각은 한 번에 담기는 각도 범위, 입사각은 시선이 벽면과 이루는 각이다.
+      90도면 정면으로 마주 보고, 작을수록 스치듯 놓인다. 자세한 것은 9.7.</span></td></tr>
       <tr><td><strong>평면도 보기 / 지우기</strong></td><td>에디터 뷰포트에 평면도를 그린다. 다시 누르면 지우고 카메라도 되돌린다</td></tr>
-      <tr><td><strong>벽 만들기</strong></td><td>워프 메시 + nDisplay 리그 + 바닥 + PlayerStart 를 현재 레벨에 만든다</td></tr>
-      <tr><td>클러스터 실행</td><td>nDisplay 창을 별도 프로세스로 띄운다</td></tr>
+      <tr><td><strong>벽 만들기</strong></td><td>워프 메시 + nDisplay 리그 + 바닥 + PlayerStart 를 현재 레벨에 만든다<br>
+      <span class="g">워프 메시는 벽 모양대로 휜 격자다. 영상을 여기 붙이면 평평한 파일이 벽
+      형상을 따라 굽는다. 리그는 그 메시와 눈 위치를 한 벌로 묶어 레벨에 놓은 것을 말한다.</span></td></tr>
+      <tr><td>클러스터 실행</td><td>nDisplay 창을 별도 프로세스로 띄운다<br>
+      <span class="g">클러스터는 nDisplay 가 화면 출력을 맡는 PC 들을 묶어 부르는 이름이다.
+      한 대뿐이어도 클러스터다.</span></td></tr>
       <tr><td>프로젝터 배치 점검</td><td>화각·입사각·밀도·겹침·교차점. 개선안을 제안한다 (10절)</td></tr>
-      <tr><td>블렌드 맵 만들기</td><td>프로젝터별 알파 맵을 <code>nDisplay/blend</code> 에 쓴다</td></tr>
+      <tr><td>블렌드 맵 만들기</td><td>프로젝터별 알파 맵을 <code>nDisplay/blend</code> 에 쓴다<br>
+      <span class="g">겹친 자리에서 두 대의 밝기를 서로 반대로 흐리게 해 이음매를 숨기는 것이
+      블렌딩이고, 알파 맵은 그 흐림 정도를 화소마다 적어 둔 그림이다.</span></td></tr>
     </tbody>
   </table></div>
   <p>
@@ -460,10 +482,13 @@ hr { border: 0; border-top: 1px solid var(--hairline-2); margin: 2.5rem 0; }
   <div class="tablewrap"><table>
     <thead><tr><th>항목</th><th>하는 일</th></tr></thead>
     <tbody>
-      <tr><td><strong>영상 변환 (아나모픽)</strong></td><td>받은 영상을 벽 형상에 맞게 역왜곡한다 → <code>_curved.mp4</code></td></tr>
+      <tr><td><strong>영상 변환 (아나모픽)</strong></td><td>받은 영상을 벽 형상에 맞게 역왜곡한다 → <code>_curved.mp4</code><br>
+      <span class="g">역왜곡은 벽 때문에 생길 왜곡을 미리 반대로 넣어 두는 것이다. 벽에 걸리면
+      두 왜곡이 서로 상쇄돼 똑바로 보인다.</span></td></tr>
       <tr><td>영상 변환 (전개만)</td><td>꺾임 보정 없이 비율만 맞춘다 → <code>_wall.mp4</code></td></tr>
       <tr><td><strong>눈 시점으로 되돌려 보기</strong></td><td>벽에 넣을 파일을 받아 스위트스팟에서 뭐가 보일지 계산 → <code>_eye.mp4</code></td></tr>
-      <tr><td>무비 렌더 큐 점검</td><td>MRQ 출력 해상도가 뷰포트와 맞는지 본다</td></tr>
+      <tr><td>무비 렌더 큐 점검</td><td>MRQ 출력 해상도가 뷰포트와 맞는지 본다<br>
+      <span class="g">MRQ 는 무비 렌더 큐. 언리얼 화면을 영상 파일로 구워 내는 기능이다.</span></td></tr>
       <tr><td>렌더 결과 좌우 합치기</td><td><code>Saved/MovieRenders</code> 의 뷰포트별 파일을 패널 순서대로 가로로 붙인다</td></tr>
       <tr><td>출력 폴더 열기</td><td>변환 결과가 쌓이는 <code>Content/Movies</code></td></tr>
     </tbody>
@@ -477,7 +502,9 @@ hr { border: 0; border-top: 1px solid var(--hairline-2); margin: 2.5rem 0; }
     <li><b>설정 편집</b> 에 도면 값 입력</li>
     <li><b>저장</b> <span>크기·비율이 도면과 맞는지 확인</span></li>
     <li><b>형상 점검</b> <span>입사각·밀도 경고 확인</span></li>
-    <li><b>평면도 보기</b> <span>법선 방향과 이음매를 눈으로 확인</span></li>
+    <li><b>평면도 보기</b> <span>법선 방향과 이음매를 눈으로 확인<br>
+      <span class="g">법선은 면에 수직으로 세운 방향이다. 벽이 어느 쪽을 향하는지를 나타낸다.
+      이음매는 패널과 패널이 만나는 자리, 또는 꺾인 벽의 코너다.</span></span></li>
     <li class="steps-key">
       <b>격자 영상으로 아나모픽 → 눈 시점으로 되돌려 보기</b>
       <span>격자가 곧게 펴지면 형상이 맞은 것. <strong>최종 검산</strong></span>
@@ -557,11 +584,14 @@ hr { border: 0; border-top: 1px solid var(--hairline-2); margin: 2.5rem 0; }
   <div class="tablewrap"><table>
     <thead><tr><th>필드</th><th>뜻</th></tr></thead>
     <tbody>
-      <tr><td>왼쪽 / 오른쪽 면 길이</td><td><strong>전개 길이</strong>. 라운드 구간은 뺀 직선 구간만</td></tr>
+      <tr><td>왼쪽 / 오른쪽 면 길이</td><td><strong>전개 길이</strong>. 라운드 구간은 뺀 직선 구간만<br>
+      <span class="g">전개 길이는 벽면을 따라 자로 잰 길이다. 위에서 내려다본 직선거리(투영 길이)
+      보다 언제나 길다. 도면 치수선은 보통 투영 길이라 그대로 쓰면 안 된다.</span></td></tr>
       <tr><td>꺾임 (도)</td><td>0 이면 일직선</td></tr>
       <tr><td>볼록</td><td>코너가 관람자 쪽으로 튀어나오면 켠다</td></tr>
       <tr><td>라운드 반경 R</td><td>실제 시공 R. 호 길이는 <code>R × 꺾임각(rad)</code> 으로 자동 계산</td></tr>
-      <tr><td>세로 크기</td><td>발광부 기준</td></tr>
+      <tr><td>세로 크기</td><td>발광부 기준<br>
+      <span class="g">발광부는 실제로 빛이 나오는 영역이다. LED 캐비닛의 테두리(베젤)는 뺀다.</span></td></tr>
       <tr><td>관람 바닥에서 벽 하단</td><td>아래 06 참고</td></tr>
     </tbody>
   </table></div>
@@ -1143,7 +1173,10 @@ md.set_vertex_instance_uv(inst, unreal.Vector2D(u / W, 1.0 - f), 0)
   </p>
   <p>
     nDisplay 는 <strong>오프액시스 투영</strong>이라 뷰포트마다 눈에서 스크린 네 모서리로
-    비대칭 절두체를 만든다. 화각은 그 결과로 정해진다.
+    비대칭 절두체를 만든다. 화각은 그 결과로 정해진다.<br>
+    <span class="g">절두체는 눈에서 화면 네 모서리로 뻗은 사각뿔에서 앞뒤를 잘라 낸 입체다.
+    그 안에 든 것만 그려진다. 오프액시스는 눈이 화면 정중앙 앞이 아니어도 되는 방식으로,
+    화면이 눈 옆에 비스듬히 있어도 상이 안 찌그러진다.</span>
   </p>
   <figure>
     <div class="dia">
@@ -1295,7 +1328,9 @@ md.set_vertex_instance_uv(inst, unreal.Vector2D(u / W, 1.0 - f), 0)
     <thead><tr><th></th><th>조건</th><th>이유</th></tr></thead>
     <tbody>
       <tr><td>1</td><td><strong>평면 위에 있을 것</strong></td><td>곡률이 변하는 자리(필렛 접점, 패널 이음매)에서 블렌딩하면 워프 오차가 증폭되고 밝기가 끊긴다. <strong>절대 조건</strong></td></tr>
-      <tr><td>2</td><td>띠 폭을 확보할 것</td><td>알파 램프가 돌 물리적 폭 + 시공 오차 흡수</td></tr>
+      <tr><td>2</td><td>띠 폭을 확보할 것</td><td>알파 램프가 돌 물리적 폭 + 시공 오차 흡수<br>
+      <span class="g">알파 램프는 겹침 구간에서 밝기를 100%에서 0%로 서서히 내리는 구간을
+      말한다. 폭이 좁으면 급하게 꺾여 띠가 눈에 띈다.</span></td></tr>
       <tr><td>3</td><td>밀도 교차점에 둘 것</td><td>두 대의 화소 밀도가 같아야 램프가 도는 동안 선명도가 안 변한다</td></tr>
     </tbody>
   </table></div>
@@ -1440,7 +1475,9 @@ md.set_vertex_instance_uv(inst, unreal.Vector2D(u / W, 1.0 - f), 0)
   </div>
   <p>
     <code>블렌드 커브 감마</code> 를 올리면 선명한 쪽이 더 오래 지배해, 겹침 구간의 선명도
-    저하 구간이 좁아진다. 가운데 대가 평면 구간을 비스듬히 보는 문제에 대한 대응 수단이다.
+    저하 구간이 좁아진다.<br>
+    <span class="g">감마는 값을 그대로 쓰지 않고 지수로 휘어 주는 계수다. 1 이면 곧은 직선,
+    올리면 한쪽으로 치우친 곡선이 된다.</span> 가운데 대가 평면 구간을 비스듬히 보는 문제에 대한 대응 수단이다.
   </p>
 
   <h3>10.7 영상 변환 — 중간본을 만들지 않는다</h3>
@@ -1574,6 +1611,8 @@ md.set_vertex_instance_uv(inst, unreal.Vector2D(u / W, 1.0 - f), 0)
   <p>
     <strong>MRQ 는 <code>.ndisplay</code> 파일을 읽지 않는다.</strong> 레벨에 놓인 DCRA
     블루프린트에 구워진 뷰포트 Region 을 그대로 출력 해상도로 쓴다
+    <span class="g">DCRA 는 nDisplay Root Actor. 레벨에 놓이는 nDisplay 설정 덩어리로,
+    스크린 위치와 뷰포트 정보를 들고 있다.</span>
     (<code>DisplayClusterMovieGraphRenderCameraSource_Math.cpp</code>).
   </p>
   <p>
