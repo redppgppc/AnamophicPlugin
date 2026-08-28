@@ -156,6 +156,11 @@ class AnamorphicRigSettings(unreal.Object):
         ClampMin="1", **BENT))
 
     # === 05 출력 ==========================================================
+    multi_node = unreal.uproperty(bool, meta=_m("05 출력", 80,
+        DisplayName="패널마다 창 따로 (멀티 노드)",
+        ToolTip="켜면 뷰포트마다 노드를 하나씩 만들어 창이 따로 뜬다. LED 프로세서가 패널별로 "
+                "입력을 받을 때. 노드마다 프로세스가 하나씩 뜨고, 프레임은 소프트웨어 배리어로 "
+                "맞춘다. 끄면 창 하나에 전부 나열한다"))
     exit_on_esc = unreal.uproperty(bool, meta=_m("05 출력", 70, DisplayName="ESC 로 종료",
         ToolTip="끄면 ESC 를 눌러도 클러스터가 안 꺼진다. 전시 현장에서는 꺼 두는 편이 안전하다"))
     follow_player = unreal.uproperty(bool, meta=_m("05 출력", 60,
@@ -303,7 +308,7 @@ class AnamorphicRigSettings(unreal.Object):
             anchor_seam=1, rotate_deg=0.0, pitch_mm=7.8,
             video_passthrough=True, exposure_bias=0.0,
             hide_screen_messages=True, show_floor=True,
-            follow_player=False, exit_on_esc=True,
+            follow_player=False, exit_on_esc=True, multi_node=False,
             arc_seg=24, face_seg=8, seg_v=4, flip_v=True, flip_winding=False,
             warn_grazing_deg=20.0, warn_band_pct=60.0, warn_density_ratio=2.0,
             warn_blend_pct=8.0, blend_gamma=1.0, bake_blend=False,
@@ -315,7 +320,7 @@ class AnamorphicRigSettings(unreal.Object):
 SCALARS = ("bent_wall", "face_b_m", "face_a_m", "wall_height_m", "bend_deg", "fillet_r_m",
            "convex", "base_m", "eye_dist_m", "eye_offset_m", "eye_height_m", "anchor_seam",
            "rotate_deg", "pitch_mm", "video_path", "video_passthrough", "exposure_bias",
-           "hide_screen_messages", "show_floor", "follow_player", "exit_on_esc",
+           "hide_screen_messages", "show_floor", "follow_player", "exit_on_esc", "multi_node",
            "arc_seg", "face_seg", "seg_v",
            "flip_v", "flip_winding", "warn_grazing_deg", "warn_band_pct", "warn_density_ratio",
            "warn_blend_pct", "blend_gamma", "bake_blend")

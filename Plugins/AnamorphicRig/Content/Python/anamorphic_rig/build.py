@@ -157,7 +157,7 @@ def spawn_media_plate(mesh, dcra, video_abs):
     return plate
 
 
-def apply_regions(dcra, wall, res_w=2560):
+def apply_regions(dcra, wall, res_w=2560, per_node=0):
     """DCRA 인스턴스의 뷰포트 Region 과 창 크기를 형상에 맞춘다.
 
     무비 렌더 큐는 .ndisplay 파일을 읽지 않고 이 값을 그대로 출력 해상도로 쓴다
@@ -169,20 +169,18 @@ def apply_regions(dcra, wall, res_w=2560):
     if cfg is None:
         raise RuntimeError("DCRA 에 current_config_data 가 없다. 에셋 임포트가 실패했는지 확인할 것")
     nodes = cfg.get_editor_property("cluster").get_editor_property("nodes")
-    assert len(nodes) == 1, "노드가 %d 개다. 멀티 노드는 아직 지원하지 않는다" % len(nodes)
-    node = list(nodes.values())[0]
 
-    _, want, ww, wh = CF.screens_and_viewports(wall, res_w)
-    have = dict(node.get_editor_property("viewports"))
-    missing, extra = [n for n in want if n not in have], [n for n in have if n not in want]
+    _, vps, ww, wh = CF.screens_and_viewports(wall, res_w)
+    want_nodes = CF.make_nodes(vps, ww, wh, per_node)
+    missing = [n for n in want_nodes if n not in nodes]
+    extra = [n for n in nodes if n not in want_nodes]
     if missing or extra:
         raise RuntimeError(
-            "DCRA 에셋의 뷰포트가 설정과 다름.\n"
+            "DCRA 에셋의 노드가 설정과 다름.\n"
             "  에셋에 있는 것: %s\n  설정이 원하는 것: %s\n"
             "  없는 것: %s / 남는 것: %s\n"
-            "해결: 콘텐츠 브라우저에서 nDisplay 에셋을 지우고 다시 빌드할 것. "
-            "(nDisplay 임포트는 기존 에셋을 덮어쓰지 못한다)"
-            % (sorted(have), sorted(want), missing, extra))
+            "해결: 콘텐츠 브라우저에서 nDisplay 에셋을 지우고 다시 빌드할 것"
+            % (sorted(nodes), sorted(want_nodes), missing, extra))
 
     def rect(x, y, w, h):
         r = unreal.DisplayClusterConfigurationRectangle()
@@ -190,13 +188,29 @@ def apply_regions(dcra, wall, res_w=2560):
             r.set_editor_property(k, int(v))
         return r
 
-    node.set_editor_property("window_rect", rect(0, 0, ww, wh))
-    for name, v in want.items():
-        g = v["region"]
-        have[name].set_editor_property("region", rect(g["x"], g["y"], g["w"], g["h"]))
-    unreal.log("뷰포트 해상도 적용: %s, 창 %dx%d"
-               % (", ".join("%s=%dx%d" % (n, v["region"]["w"], v["region"]["h"])
-                            for n, v in sorted(want.items())), ww, wh))
+    said = []
+    for nname in CF.node_order(want_nodes):
+        node, want = nodes[nname], want_nodes[nname]["viewports"]
+        have = dict(node.get_editor_property("viewports"))
+        miss, ext = [n for n in want if n not in have], [n for n in have if n not in want]
+        if miss or ext:
+            raise RuntimeError(
+                "DCRA 에셋 %s 의 뷰포트가 설정과 다름.\n"
+                "  에셋에 있는 것: %s\n  설정이 원하는 것: %s\n"
+                "  없는 것: %s / 남는 것: %s\n"
+                "해결: 콘텐츠 브라우저에서 nDisplay 에셋을 지우고 다시 빌드할 것. "
+                "(nDisplay 임포트는 기존 에셋을 덮어쓰지 못한다)"
+                % (nname, sorted(have), sorted(want), miss, ext))
+        w = want_nodes[nname]["window"]
+        node.set_editor_property("window_rect", rect(w["x"], w["y"], w["w"], w["h"]))
+        for name, v in want.items():
+            g = v["region"]
+            have[name].set_editor_property("region", rect(g["x"], g["y"], g["w"], g["h"]))
+        said.append("%s 창 %dx%d [%s]"
+                    % (nname, w["w"], w["h"],
+                       ", ".join("%s=%dx%d" % (n, v["region"]["w"], v["region"]["h"])
+                                 for n, v in sorted(want.items()))))
+    unreal.log("뷰포트 해상도 적용: " + " / ".join(said))
 
 
 def asset_viewports(asset, name):
@@ -275,7 +289,7 @@ def build_level(wall, opts):
 
     필요한 키: asset_dir, asset_name, mesh_name, cfg_path, root, res_w,
                video, video_passthrough, exposure_bias, rig_origin,
-               follow_player, exit_on_esc,
+               follow_player, exit_on_esc, per_node,
                arc_seg, face_seg, seg_v, flip_v, flip_winding
     """
     actors = _actors()
@@ -299,12 +313,13 @@ def build_level(wall, opts):
                                opts["flip_v"], opts["flip_winding"])
 
     asset = "%s/%s" % (opts["asset_dir"], opts["asset_name"])
+    per_node = opts.get("per_node", 0)
     cfg, ww, wh = CF.build(wall, "%s.%s" % (asset, opts["asset_name"]), opts["res_w"],
                            follow_player=opts.get("follow_player", False),
-                           exit_on_esc=opts.get("exit_on_esc", True))
+                           exit_on_esc=opts.get("exit_on_esc", True), per_node=per_node)
     CF.write(cfg, opts["cfg_path"])
-    ensure_asset(asset, opts["asset_name"], opts["cfg_path"],
-                 cfg["nDisplay"]["cluster"]["nodes"]["node_0"]["viewports"])
+    want = [v for n in cfg["nDisplay"]["cluster"]["nodes"].values() for v in n["viewports"]]
+    ensure_asset(asset, opts["asset_name"], opts["cfg_path"], want)
 
     if opts.get("video_passthrough"):
         spawn_passthrough_volume(opts.get("exposure_bias", 0.0))
@@ -351,7 +366,7 @@ def build_level(wall, opts):
                 unreal.Rotator(roll=0.0, pitch=0.0, yaw=p.yaw), False, False)
             c.set_relative_scale3d(unreal.Vector(1.0, p.w, p.h))
 
-    apply_regions(dcra, wall, opts["res_w"])
+    apply_regions(dcra, wall, opts["res_w"], per_node)
 
     if opts.get("show_floor"):
         spawn_floor(dcra, wall, opts["eye_height"])

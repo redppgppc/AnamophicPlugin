@@ -1628,20 +1628,49 @@ md.set_vertex_instance_uv(inst, unreal.Vector2D(u / W, 1.0 - f), 0)
   </div>
 
   <h3>12.3 노드가 여럿이면</h3>
+  <p>
+    <code>05 출력 &gt; 패널마다 창 따로 (멀티 노드)</code> 를 켜면 뷰포트마다 노드를 하나씩
+    만든다. <strong>창이 따로 뜨고 프로세스도 하나씩 뜬다.</strong> LED 프로세서가 패널별로
+    입력을 받을 때 쓴다. 끄면 창 하나에 전부 영역으로 나열한다 (프로세서가 한 장을 받아
+    쪼개는 방식).
+  </p>
+  <div class="block"><pre>패널 2장 1920x1440, 캔버스 3840x1440
+
+끔   node_0  창 3840x1440   뷰포트 vp_L, vp_R    동기 none
+켬   node_0  창 1920x1440   뷰포트 vp_L         동기 ethernet
+     node_1  창 1920x1440   뷰포트 vp_R</pre></div>
+  <p>
+    창이 갈리면 <strong>뷰포트 좌표도 그 창의 원점 기준으로 다시 잡힌다.</strong>
+    캔버스에서 <code>x=1920</code> 이던 오른쪽 패널이 자기 창에서는 <code>x=0</code> 이 된다.
+    창 위치는 캔버스에서의 자리를 물려받으므로, 확장 데스크톱에서는 그 좌표가 곧 어느
+    모니터로 나갈지를 정한다.
+  </p>
   <div class="tablewrap"><table>
-    <thead><tr><th>항목</th><th>지금 값</th><th>실시간에서 무엇이 문제인가</th></tr></thead>
+    <thead><tr><th>항목</th><th>지금 값</th><th>무엇을 알아야 하나</th></tr></thead>
     <tbody>
+      <tr><td>렌더 동기<br><code>renderSyncPolicy</code></td>
+          <td>노드 1개면 <code>none</code><br>여럿이면 <code>ethernet</code></td>
+          <td>자동으로 바뀐다. 안 맞추면 창마다 다른 프레임이 떠서 이음매가 어긋난다.
+              현장 하드웨어(Quadro Sync)가 들어오면 <code>nvidia</code> 로 바꾼다</td></tr>
       <tr><td>입력 동기<br><code>inputSyncPolicy</code></td><td><code>None</code></td>
           <td>노드마다 입력을 따로 받아 상태가 갈린다. 프라이머리가 받아서
-              <strong>클러스터 이벤트</strong>로 뿌려야 한다</td></tr>
-      <tr><td>렌더 동기<br><code>renderSyncPolicy</code></td><td><code>none</code></td>
-          <td>출력이 둘 이상이면 화면이 찢어진다. <code>nvidia</code> 또는
-              <code>ethernet</code> 으로 바꾼다</td></tr>
-      <tr><td>노드 수</td><td>1개 고정</td>
-          <td><code>build.apply_regions()</code> 가 노드 하나를 전제로 assert 를 걸고 있다.
-              멀티 노드는 아직 미지원</td></tr>
+              <strong>클러스터 이벤트</strong>로 뿌려야 한다. 아직 미구현</td></tr>
+      <tr><td>소리</td><td>프라이머리만</td>
+          <td>노드마다 켜면 같은 소리가 겹쳐 나온다</td></tr>
+      <tr><td>종료</td><td>창을 따로 닫으면 멈춘다</td>
+          <td>배리어 동기라 한 창을 닫으면 나머지가 그 노드를 기다린다.
+              전부 닫아야 정리된다</td></tr>
     </tbody>
   </table></div>
+  <div class="note note--warn">
+    <span class="note-label">벽 종류를 바꾸면 다시 빌드</span>
+    <p>
+      멀티 노드를 켜고 끄면 DCRA 에셋의 <strong>노드 구성이 바뀐다.</strong>
+      <code>벽 만들기</code> 를 다시 눌러야 한다. 뷰포트는
+      <code>bOverrideViewportsFromExternalConfig</code> 로 덮어쓰지만 노드와 스크린 컴포넌트는
+      에셋에 구워져 있다.
+    </p>
+  </div>
   <p>
     외부 입력(센서, OSC, TCP, DMX)도 규칙이 같다. 단일 노드면 평소대로 받으면 되고,
     여러 노드면 프라이머리가 받아 브로드캐스트해야 노드끼리 상태가 안 갈린다.

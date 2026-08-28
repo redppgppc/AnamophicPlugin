@@ -65,10 +65,61 @@ def screens_and_viewports(wall, res_w=2560, scale=1.0):
     return (screens, vps) + scale_regions(vps, ww, wh, scale)
 
 
+def _node(x, y, w, h, vps, sound):
+    return {"host": "127.0.0.1", "sound": bool(sound), "fullScreen": False,
+            "window": {"x": int(x), "y": int(y), "w": int(w), "h": int(h)},
+            "viewports": vps}
+
+
+def make_nodes(vps, ww, wh, per_node=0):
+    """뷰포트를 노드로 나눈다. -> nodes dict
+
+    per_node <= 0 이면 전부 노드 하나에 담는다. 창 하나에 뷰포트 여러 개가 영역으로
+    나열되고, LED 프로세서가 그 한 장을 받아 패널로 쪼갠다.
+
+    쪼개면 노드마다 창이 따로 뜬다. 프로세서가 패널별로 입력을 받을 때 쓴다.
+    창 위치는 캔버스에서의 자리를 그대로 물려받는다. 확장 데스크톱에서는 그 좌표가
+    곧 어느 모니터로 나갈지를 정한다. 노드 안에서는 뷰포트 좌표를 그 창의 원점 기준으로
+    다시 잡는다. 창이 달라지면 원점도 달라지기 때문이다.
+
+    소리는 프라이머리만 낸다. 노드마다 켜면 같은 소리가 겹쳐 나온다.
+    """
+    order = sorted(vps, key=lambda n: (vps[n]["region"]["x"], vps[n]["region"]["y"]))
+    if per_node <= 0 or per_node >= len(order):
+        return {"node_0": _node(0, 0, ww, wh, vps, True)}
+    nodes = {}
+    for i in range(0, len(order), per_node):
+        group = order[i:i + per_node]
+        rs = [vps[n]["region"] for n in group]
+        x0, y0 = min(r["x"] for r in rs), min(r["y"] for r in rs)
+        w = max(r["x"] + r["w"] for r in rs) - x0
+        h = max(r["y"] + r["h"] for r in rs) - y0
+        sub = {}
+        for n in group:
+            v = dict(vps[n])
+            r = dict(v["region"])
+            r["x"], r["y"] = r["x"] - x0, r["y"] - y0
+            v["region"] = r
+            sub[n] = v
+        idx = len(nodes)
+        nodes["node_%d" % idx] = _node(x0, y0, w, h, sub, idx == 0)
+    return nodes
+
+
+def node_order(nodes):
+    """node_0, node_1, ... 순서. 프라이머리가 먼저 떠야 나머지가 붙는다."""
+    return sorted(nodes, key=lambda n: int(n.rsplit("_", 1)[-1]))
+
+
 def build(wall, asset_path, res_w=2560, win_x=0, win_y=0,
-          follow_player=False, exit_on_esc=True, scale=1.0):
-    """-> (설정 dict, 창 가로, 창 세로)"""
+          follow_player=False, exit_on_esc=True, scale=1.0, per_node=0):
+    """-> (설정 dict, 캔버스 가로, 캔버스 세로)
+
+    per_node 로 쪼개면 반환하는 크기는 창 하나가 아니라 전체 캔버스다.
+    창 크기는 노드마다 다르므로 nodes[...]["window"] 를 봐야 한다.
+    """
     screens, vps, ww, wh = screens_and_viewports(wall, res_w, scale)
+    nodes = make_nodes(vps, ww, wh, per_node)
     cfg = {"nDisplay": {
         "description": "Anamorphic Rig: %s" % type(wall).__name__,
         "version": "5.00",
@@ -89,12 +140,12 @@ def build(wall, asset_path, res_w=2560, win_x=0, win_y=0,
             "screens": screens},
         "cluster": {
             "primaryNode": {"id": "node_0"},
-            "sync": {"renderSyncPolicy": {"type": "none", "parameters": {}},
+            # 노드가 여럿이면 소프트웨어 배리어로 프레임을 맞춘다. 안 맞추면 창마다
+            # 다른 프레임이 떠서 이음매에서 어긋난다. 현장 하드웨어가 되면 nvidia 로 바꾼다.
+            "sync": {"renderSyncPolicy": {
+                         "type": "ethernet" if len(nodes) > 1 else "none", "parameters": {}},
                      "inputSyncPolicy": {"type": "None", "parameters": {}}},
-            "nodes": {"node_0": {
-                "host": "127.0.0.1", "sound": True, "fullScreen": False,
-                "window": {"x": win_x, "y": win_y, "w": ww, "h": wh},
-                "viewports": vps}}},
+            "nodes": nodes},
     }}
     return cfg, ww, wh
 
@@ -143,7 +194,7 @@ def fit_window(ww, wh, area=None):
 
 
 def launch_args(ue_exe, uproject, map_path, cfg_path, ww, wh,
-                win_x=0, win_y=0, hide_screen_messages=True):
+                win_x=0, win_y=0, hide_screen_messages=True, node="node_0"):
     """클러스터 실행 인자.
 
     창을 실제로 배치하는 것은 WinX/ResX 다. 설정 JSON 의 window 사각형은 창을
@@ -156,7 +207,7 @@ def launch_args(ue_exe, uproject, map_path, cfg_path, ww, wh,
     args = [ue_exe, uproject, map_path,
             # -dc_dev_mono 는 필수다. 없으면 렌더 디바이스가 아예 생성되지 않고
             # nDisplay 대신 일반 플레이어 카메라가 조용히 보인다.
-            "-game", "-dc_cluster", "-dc_dev_mono", "-dc_node=node_0",
+            "-game", "-dc_cluster", "-dc_dev_mono", "-dc_node=%s" % node,
             '-dc_cfg=%s' % cfg_path,
             "-windowed", "-forceres",
             "WinX=%d" % win_x, "WinY=%d" % win_y, "ResX=%d" % ww, "ResY=%d" % wh,
@@ -205,6 +256,26 @@ def demo():
     assert r["vp_right"]["region"] == {"x": 1280, "y": 0, "w": 1280, "h": 720}, r["vp_right"]
     for name, s in cfg["nDisplay"]["scene"]["screens"].items():
         assert s["size"] == {"width": 70.8, "height": 39.8}, "스크린 실측(cm)은 안 줄어야 한다"
+
+    # 멀티 노드: 뷰포트마다 창이 따로. 창 안에서 좌표는 원점부터 다시 잡힌다.
+    cfg, ww, wh = build(ch, "/Game/X/Y.Y", per_node=1)
+    assert (ww, wh) == (5120, 1440), (ww, wh)      # 반환은 전체 캔버스
+    nodes = cfg["nDisplay"]["cluster"]["nodes"]
+    assert node_order(nodes) == ["node_0", "node_1"], list(nodes)
+    assert nodes["node_0"]["window"] == {"x": 0, "y": 0, "w": 2560, "h": 1440}
+    assert nodes["node_1"]["window"] == {"x": 2560, "y": 0, "w": 2560, "h": 1440}
+    assert list(nodes["node_0"]["viewports"]) == ["vp_left"]
+    assert list(nodes["node_1"]["viewports"]) == ["vp_right"]
+    for n in nodes.values():
+        r = list(n["viewports"].values())[0]["region"]
+        assert (r["x"], r["y"]) == (0, 0), "창 원점 기준으로 다시 잡혀야 한다: %s" % r
+    assert nodes["node_0"]["sound"] and not nodes["node_1"]["sound"], "소리는 프라이머리만"
+    assert cfg["nDisplay"]["cluster"]["sync"]["renderSyncPolicy"]["type"] == "ethernet"
+    assert "-dc_node=node_1" in launch_args("u", "p", "/M", "c", 1, 1, node="node_1")
+
+    # 노드 수가 뷰포트 수 이상이면 안 쪼갠다 (지금까지의 동작)
+    assert node_order(build(ch, "/Game/X/Y.Y", per_node=9)[0]
+                      ["nDisplay"]["cluster"]["nodes"]) == ["node_0"]
 
     # 창 배치: 들어가면 가운데, 넘치면 비율을 지켜 줄이고 가운데
     assert fit_window(800, 600, (1920, 1032)) == (800, 600, 560, 216, 1.0)

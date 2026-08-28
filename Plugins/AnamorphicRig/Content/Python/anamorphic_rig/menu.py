@@ -214,6 +214,7 @@ def _opts(s):
         exposure_bias=s.exposure_bias, rig_origin=(0.0, 0.0, s.eye_height_m * S.M),
         show_floor=s.show_floor, eye_height=s.eye_height_m * S.M,
         follow_player=s.follow_player, exit_on_esc=s.exit_on_esc,
+        per_node=1 if s.multi_node else 0,
         arc_seg=s.arc_seg, face_seg=s.face_seg, seg_v=s.seg_v,
         flip_v=s.flip_v, flip_winding=s.flip_winding)
 
@@ -332,9 +333,9 @@ def act_launch(s=None):
     s = current_settings() if s is None else s      # 설정 대화상자가 편집 중인 값을 넘긴다
     wall = S.to_wall(s)
     o = _opts(s)
-    cfg, ww, wh = CF.build(wall, "%s/%s.%s" % (o["asset_dir"], o["asset_name"], o["asset_name"]),
-                           o["res_w"], follow_player=o["follow_player"],
-                           exit_on_esc=o["exit_on_esc"])
+    asset = "%s/%s.%s" % (o["asset_dir"], o["asset_name"], o["asset_name"])
+    cfg, ww, wh = CF.build(wall, asset, o["res_w"], follow_player=o["follow_player"],
+                           exit_on_esc=o["exit_on_esc"], per_node=o["per_node"])
     CF.write(cfg, o["cfg_path"])
     exe = os.path.join(unreal.Paths.convert_relative_path_to_full(unreal.Paths.engine_dir()),
                        "Binaries", "Win64", "UnrealEditor.exe")
@@ -345,22 +346,31 @@ def act_launch(s=None):
     path = o["cfg_path"]
     w, h, x, y, k = CF.fit_window(ww, wh)
     if k < 1.0:
-        cfg, w, h = CF.build(wall,
-                             "%s/%s.%s" % (o["asset_dir"], o["asset_name"], o["asset_name"]),
-                             o["res_w"], follow_player=o["follow_player"],
-                             exit_on_esc=o["exit_on_esc"], scale=k)
+        cfg, w, h = CF.build(wall, asset, o["res_w"], follow_player=o["follow_player"],
+                             exit_on_esc=o["exit_on_esc"], scale=k, per_node=o["per_node"])
         path = o["cfg_path"][:-len(".ndisplay")] + "_preview.ndisplay"
         CF.write(cfg, path)
         w, h, x, y, _ = CF.fit_window(w, h)
         _log("창 %dx%d 가 모니터보다 커서 %d%% 로 줄였습니다 -> %dx%d" % (ww, wh, k * 100, w, h))
         _log("미리보기 설정: %s (원본 %s 는 그대로)"
              % (os.path.basename(path), os.path.basename(o["cfg_path"])))
-    args = CF.launch_args(exe, uproject, level, path, w, h, win_x=x, win_y=y,
-                          hide_screen_messages=s.hide_screen_messages)
-    _log("클러스터 실행: %dx%d  창 위치 (%d, %d)" % (w, h, x, y))
-    _log("작업표시줄 자동 숨김과 디스플레이 배율 100%% 를 확인할 것")
+    # 노드마다 프로세스가 하나씩. 프라이머리(node_0)가 먼저 떠야 나머지가 붙는다.
+    # x, y 는 캔버스를 화면 가운데에 놓는 오프셋이고, 노드 창은 캔버스 안의 제 자리에 놓인다.
+    nodes = cfg["nDisplay"]["cluster"]["nodes"]
     import subprocess
-    subprocess.Popen(args)
+    for nname in CF.node_order(nodes):
+        r = nodes[nname]["window"]
+        args = CF.launch_args(exe, uproject, level, path, r["w"], r["h"],
+                              win_x=x + r["x"], win_y=y + r["y"], node=nname,
+                              hide_screen_messages=s.hide_screen_messages)
+        _log("%s 실행: %dx%d  창 위치 (%d, %d)  뷰포트 %s"
+             % (nname, r["w"], r["h"], x + r["x"], y + r["y"],
+                ", ".join(sorted(nodes[nname]["viewports"]))))
+        subprocess.Popen(args)
+    if len(nodes) > 1:
+        _log("노드 %d 개. 프레임 동기는 소프트웨어 배리어(ethernet)다. "
+             "창을 하나씩 닫으면 나머지가 동기를 기다리며 멈춘다" % len(nodes))
+    _log("작업표시줄 자동 숨김과 디스플레이 배율 100% 를 확인할 것")
 
 
 def _proj_setup(s):
