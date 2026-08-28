@@ -24,7 +24,7 @@ OUTSIDE = 65535    # remap 이 fill 색으로 칠하도록 넣는 범위 밖 값
 class Plan(object):
     """벽 하나에 대한 변환 계획. 출력 크기와 투영 경계를 한 번만 재서 들고 있는다."""
 
-    def __init__(self, wall, out_w=3840, virt_w=0):
+    def __init__(self, wall, out_w, virt_w=0):
         self.wall, self.out_w, self.virt_w = wall, int(out_w), int(virt_w)
         h = int(round(self.out_w * wall.height / wall.developed()))
         self.out_h = h - h % 2                          # yuv420 은 짝수 높이가 필요
@@ -433,7 +433,7 @@ def convert(plan, src, out_dir, curved=True, log=print):
     return dst
 
 
-def preview(plan, src, out_dir, width=1920, log=print):
+def preview(plan, src, out_dir, width=None, log=print):
     """전개 영상을 받아 스위트스팟 시점 영상을 만든다. 검증 전용, 벽에 넣는 파일이 아니다."""
     assert os.path.isfile(src), "원본이 없다: " + src
     os.makedirs(out_dir, exist_ok=True)

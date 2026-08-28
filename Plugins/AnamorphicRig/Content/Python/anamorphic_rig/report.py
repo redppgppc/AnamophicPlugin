@@ -24,7 +24,7 @@ def sizes(wall, res_w):
     out.append("           비율 %.3f : 1  (%s)" % (W / wall.height, _ratio_name(W / wall.height)))
     _, _, ww, wh = CF.screens_and_viewports(wall, res_w)
     out.append("출력 해상도  창 %d x %d px  (비율 %.3f : 1)" % (ww, wh, ww / float(wh)))
-    plan = V.Plan(wall)
+    plan = V.Plan(wall, res_w)
     out.append("영상 파일    %d x %d px  (비율 %.3f : 1)  <- 영상 변환이 만드는 크기"
                % (plan.out_w, plan.out_h, plan.out_w / float(plan.out_h)))
     if abs(ww / float(wh) - W / wall.height) > 0.02:
@@ -32,7 +32,20 @@ def sizes(wall, res_w):
     return out
 
 
-def content_spec(wall, warn_band=60.0):
+def video_warning(out_w, warn_video_w):
+    """영상 가로가 재생 쪽 한계를 넘는지. -> 경고 문자열 또는 None.
+
+    만들어 놓고 현장 재생기가 못 여는 것이 최악이다. h.264 하드웨어 디코더는
+    대개 4096 또는 8192 에서 막힌다. 소프트웨어로는 열려서 개발 PC 에서는 멀쩡해 보인다.
+    """
+    if warn_video_w <= 0 or out_w <= warn_video_w:
+        return None
+    return ("영상 가로 %d px 가 기준 %d px 를 넘는다. 하드웨어 디코더가 못 열 수 있다. "
+            "이미지 시퀀스로 내거나, 프로젝터별로 나눠 내거나, 재생 장비 사양을 확인할 것"
+            % (out_w, warn_video_w))
+
+
+def content_spec(wall, res_w, warn_band=60.0):
     """영상 만드는 쪽에 그대로 넘길 숫자. -> (줄 목록, 경고 목록).
 
     아나모픽 변환은 **벽의 기하만** 되돌린다. 영상 안에 이미 찍혀 있는 원근은 못 고친다.
@@ -41,7 +54,7 @@ def content_spec(wall, warn_band=60.0):
 
     화각은 Xv = y/x 가 탄젠트이므로 경계값에 atan 을 씌워 각도로 되돌린다.
     """
-    plan = V.Plan(wall)
+    plan = V.Plan(wall, res_w)
     x0, x1, z0, z1, _, aspect, band = plan.plane()
     h_fov = math.degrees(math.atan(x1) - math.atan(x0))
     v_fov = math.degrees(math.atan(z1) - math.atan(z0))
@@ -64,14 +77,18 @@ def _ratio_name(r):
     return "%s 에 가까움" % name if best < 0.06 else "%.2f : 1" % r
 
 
-def summarize(wall, res_w, warn_grazing=20.0, warn_band=60.0, warn_density=2.0):
+def summarize(wall, res_w, warn_grazing=20.0, warn_band=60.0, warn_density=2.0,
+              warn_video_w=0):
     """-> (줄 목록, 경고 목록). 경고가 비어 있으면 형상이 쓸 만하다는 뜻."""
     lines, warns = [], []
     W = wall.developed()
     lo, hi = G.span_deg(wall)
     try:
         lines.extend(sizes(wall, res_w) + [""])
-        spec, spec_warns = content_spec(wall, warn_band)
+        vw = video_warning(V.Plan(wall, res_w).out_w, warn_video_w)
+        if vw:
+            warns.append(vw)
+        spec, spec_warns = content_spec(wall, res_w, warn_band)
         lines.extend(spec + [""])
         warns.extend(spec_warns)
     except ValueError as e:      # 패널마다 높이가 다르면 전개 직사각형이 안 나온다

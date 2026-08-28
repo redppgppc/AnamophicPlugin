@@ -125,7 +125,8 @@ def act_save(s=None):
     _log("저장: " + path)
     wall = S.to_wall(s)
     lines, warns = R.summarize(wall, S.res_w_of(s, wall), s.warn_grazing_deg,
-                               s.warn_band_pct, s.warn_density_ratio)
+                               s.warn_band_pct, s.warn_density_ratio,
+                               s.warn_video_w)
     for l in lines:
         _log(l)
     for w in warns:
@@ -225,7 +226,8 @@ def act_check(s=None):
     s = current_settings() if s is None else s      # 설정 대화상자가 편집 중인 값을 넘긴다
     wall = S.to_wall(s)
     lines, warns = R.summarize(wall, S.res_w_of(s, wall), s.warn_grazing_deg,
-                               s.warn_band_pct, s.warn_density_ratio)
+                               s.warn_band_pct, s.warn_density_ratio,
+                               s.warn_video_w)
     for l in lines:
         _log(l)
     for w in warns:
@@ -429,7 +431,7 @@ def _proj_setup(s):
             raise RuntimeError("알파 합이 1 이 아닙니다 (%.6f ~ %.6f)" % (lo, hi))
         maps = BL.write_maps(wall, projs, os.path.join(ROOT, "nDisplay", "blend"),
                              s.blend_gamma, _log)
-    return wall, projs, V.Plan(wall), maps
+    return wall, projs, V.Plan(wall, S.res_w_of(s, wall)), maps
 
 
 def _proj_out():
@@ -510,7 +512,8 @@ def act_convert_wall():
 
 def _convert(curved):
     s = current_settings()
-    plan = V.Plan(S.to_wall(s))
+    wall = S.to_wall(s)
+    plan = V.Plan(wall, S.res_w_of(s, wall))
     src = _pick_file("변환할 영상 고르기")
     if not src:
         return
@@ -528,7 +531,8 @@ def _convert(curved):
 
 def act_preview_video():
     s = current_settings()
-    plan = V.Plan(S.to_wall(s))
+    wall = S.to_wall(s)
+    plan = V.Plan(wall, S.res_w_of(s, wall))
     src = _pick_file("되돌려 볼 전개 영상 고르기")
     if not src:
         return

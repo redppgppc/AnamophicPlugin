@@ -135,6 +135,11 @@ class AnamorphicRigSettings(unreal.Object):
         ToolTip="관람자 기준 왼쪽부터. 비워 두면 프로젝터 검토를 하지 않는다"))
 
     # === 07 경고 기준 =====================================================
+    warn_video_w = unreal.uproperty(int, meta=_m("07 경고 기준", 40,
+        DisplayName="영상 가로 경고 (px)", ClampMin="0",
+        ToolTip="영상 변환이 만드는 가로가 이 값을 넘으면 경고한다. h.264 하드웨어 디코더는 "
+                "대개 4096 또는 8192 에서 막힌다. 소프트웨어로는 열려서 개발 PC 에서는 "
+                "멀쩡해 보인다. 0 이면 검사하지 않는다"))
     warn_density_ratio = unreal.uproperty(float, meta=_m("07 경고 기준", 30,
         DisplayName="화소 밀도 차 경고 (배)"))
     warn_band_pct = unreal.uproperty(float, meta=_m("07 경고 기준", 20,
@@ -327,7 +332,7 @@ class AnamorphicRigSettings(unreal.Object):
             follow_player=False, exit_on_esc=True, multi_node=False, fit_preview=True,
             arc_seg=24, face_seg=8, seg_v=4, flip_v=True, flip_winding=False,
             warn_grazing_deg=20.0, warn_band_pct=60.0, warn_density_ratio=2.0,
-            warn_blend_pct=8.0, blend_gamma=1.0, bake_blend=False,
+            warn_blend_pct=8.0, blend_gamma=1.0, bake_blend=False, warn_video_w=4096,
         ))
 
 
@@ -341,7 +346,7 @@ SCALARS = ("bent_wall", "face_b_m", "face_a_m", "wall_height_m", "bend_deg", "fi
            "fit_preview",
            "arc_seg", "face_seg", "seg_v",
            "flip_v", "flip_winding", "warn_grazing_deg", "warn_band_pct", "warn_density_ratio",
-           "warn_blend_pct", "blend_gamma", "bake_blend")
+           "warn_blend_pct", "blend_gamma", "bake_blend", "warn_video_w")
 PROJ_FIELDS = ("name", "span_start_m", "span_end_m", "back_m", "place_free",
                "free_x_m", "free_y_m", "height_m", "res_x", "res_y")
 PANEL_FIELDS = ("name", "width_m", "height_m", "panel_base_m", "auto_res", "res_x", "res_y",
