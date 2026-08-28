@@ -192,10 +192,11 @@ class AnamorphicRigSettings(unreal.Object):
                 "보통 '영상 변환 (아나모픽)' 이 만든 _curved.mp4 를 넣는다"))
 
     # === 04 LED ===========================================================
+    # BENT 를 그대로 쓰면 EditCondition 이 두 번 들어가 TypeError 가 난다.
+    # 조건을 하나로 합쳐서 쓴다.
     wall_res_x = unreal.uproperty(int, meta=_m("04 LED", 30, DisplayName="벽 이미지 가로 (px)",
-        ClampMin="1", EditCondition="!wall_auto_res",
-        ToolTip="꺾인 벽은 한 장이라 가로 화소 하나면 된다. 세로는 전개 비율에서 나온다",
-        **BENT))
+        ClampMin="1", EditCondition="bent_wall && !wall_auto_res", EditConditionHides=True,
+        ToolTip="꺾인 벽은 한 장이라 가로 화소 하나면 된다. 세로는 전개 비율에서 나온다"))
     wall_auto_res = unreal.uproperty(bool, meta=_m("04 LED", 20,
         DisplayName="해상도를 피치에서 자동",
         ToolTip="끄면 아래 가로 화소를 직접 입력한다", **BENT))
