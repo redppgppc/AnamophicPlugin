@@ -17,7 +17,7 @@
   "exposure_bias": 0.0,
   "hide_screen_messages": true,
   "show_floor": true,
-  "follow_player": true,
+  "follow_player": false,
   "exit_on_esc": true,
   "arc_seg": 24,
   "face_seg": 8,
