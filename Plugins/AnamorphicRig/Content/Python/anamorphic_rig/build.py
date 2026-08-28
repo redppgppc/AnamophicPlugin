@@ -275,6 +275,7 @@ def build_level(wall, opts):
 
     필요한 키: asset_dir, asset_name, mesh_name, cfg_path, root, res_w,
                video, video_passthrough, exposure_bias, rig_origin,
+               follow_player, exit_on_esc,
                arc_seg, face_seg, seg_v, flip_v, flip_winding
     """
     actors = _actors()
@@ -298,7 +299,9 @@ def build_level(wall, opts):
                                opts["flip_v"], opts["flip_winding"])
 
     asset = "%s/%s" % (opts["asset_dir"], opts["asset_name"])
-    cfg, ww, wh = CF.build(wall, "%s.%s" % (asset, opts["asset_name"]), opts["res_w"])
+    cfg, ww, wh = CF.build(wall, "%s.%s" % (asset, opts["asset_name"]), opts["res_w"],
+                           follow_player=opts.get("follow_player", False),
+                           exit_on_esc=opts.get("exit_on_esc", True))
     CF.write(cfg, opts["cfg_path"])
     ensure_asset(asset, opts["asset_name"], opts["cfg_path"],
                  cfg["nDisplay"]["cluster"]["nodes"]["node_0"]["viewports"])

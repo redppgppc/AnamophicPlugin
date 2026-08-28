@@ -156,6 +156,13 @@ class AnamorphicRigSettings(unreal.Object):
         ClampMin="1", **BENT))
 
     # === 05 출력 ==========================================================
+    exit_on_esc = unreal.uproperty(bool, meta=_m("05 출력", 70, DisplayName="ESC 로 종료",
+        ToolTip="끄면 ESC 를 눌러도 클러스터가 안 꺼진다. 전시 현장에서는 꺼 두는 편이 안전하다"))
+    follow_player = unreal.uproperty(bool, meta=_m("05 출력", 60,
+        DisplayName="플레이어 카메라 따라가기",
+        ToolTip="켜면 리그가 로컬 플레이어 카메라를 따라간다. 폰을 조종하면 벽 화면도 같이 움직인다. "
+                "벽이 리그에 붙어 다니므로 아나모픽은 그대로 맞는다. "
+                "관람자가 한자리에 서는 전시에서는 끈다"))
     show_floor = unreal.uproperty(bool, meta=_m("05 출력", 50, DisplayName="바닥 만들기",
         ToolTip="벽 아래에 격자 바닥을 깐다. 빈 맵에서 벽만 떠 있으면 거리감이 없어\n"
                 "착시가 맞는지 눈으로 판단하기 어렵다"))
@@ -296,6 +303,7 @@ class AnamorphicRigSettings(unreal.Object):
             anchor_seam=1, rotate_deg=0.0, pitch_mm=7.8,
             video_passthrough=True, exposure_bias=0.0,
             hide_screen_messages=True, show_floor=True,
+            follow_player=False, exit_on_esc=True,
             arc_seg=24, face_seg=8, seg_v=4, flip_v=True, flip_winding=False,
             warn_grazing_deg=20.0, warn_band_pct=60.0, warn_density_ratio=2.0,
             warn_blend_pct=8.0, blend_gamma=1.0, bake_blend=False,
@@ -307,7 +315,8 @@ class AnamorphicRigSettings(unreal.Object):
 SCALARS = ("bent_wall", "face_b_m", "face_a_m", "wall_height_m", "bend_deg", "fillet_r_m",
            "convex", "base_m", "eye_dist_m", "eye_offset_m", "eye_height_m", "anchor_seam",
            "rotate_deg", "pitch_mm", "video_path", "video_passthrough", "exposure_bias",
-           "hide_screen_messages", "show_floor", "arc_seg", "face_seg", "seg_v",
+           "hide_screen_messages", "show_floor", "follow_player", "exit_on_esc",
+           "arc_seg", "face_seg", "seg_v",
            "flip_v", "flip_winding", "warn_grazing_deg", "warn_band_pct", "warn_density_ratio",
            "warn_blend_pct", "blend_gamma", "bake_blend")
 PROJ_FIELDS = ("name", "span_start_m", "span_end_m", "back_m", "place_free",

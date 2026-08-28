@@ -167,6 +167,11 @@ td code { white-space:nowrap; }
           <td>필요한 외부 입력 목록 + 입력 폼. 채우면 프리셋 JSON 이 나온다.
               폼 출력을 <code>analyze()</code> 에 통과시켜 확인함 (경고 0건)</td></tr>
       <tr><td><span class="chip chip--done">완료</span></td>
+          <td><code>follow_player</code> / <code>exit_on_esc</code> 설정 노출 (2026-08-27)</td>
+          <td>실시간 인터랙션용. <code>bFollowLocalPlayerCamera</code> 는 <code>config.build()</code> 에
+              있었으나 호출부가 안 넘겨 항상 꺼져 있었다. 기본값은 기존 동작 그대로
+              (따라가기 끔 / ESC 종료 켬)</td></tr>
+      <tr><td><span class="chip chip--done">완료</span></td>
           <td>문서 용어 설명 (2026-08-27)</td>
           <td>02-guide.html 17곳, 04-site-input.html 16곳. 첫 등장 자리에만.
               규칙은 <code>CLAUDE.md</code> 4절에 넣음</td></tr>

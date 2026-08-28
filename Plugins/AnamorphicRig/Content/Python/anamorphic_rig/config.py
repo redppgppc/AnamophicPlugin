@@ -48,7 +48,8 @@ def screens_and_viewports(wall, res_w=2560):
     return screens, vps, ww, wh
 
 
-def build(wall, asset_path, res_w=2560, win_x=0, win_y=0, follow_player=False):
+def build(wall, asset_path, res_w=2560, win_x=0, win_y=0,
+          follow_player=False, exit_on_esc=True):
     """-> (설정 dict, 창 가로, 창 세로)"""
     screens, vps, ww, wh = screens_and_viewports(wall, res_w)
     cfg = {"nDisplay": {
@@ -59,7 +60,8 @@ def build(wall, asset_path, res_w=2560, win_x=0, win_y=0, follow_player=False):
         # 이 파일의 형상을 조용히 무시한다.
         # 스크린 *크기* 는 여전히 블루프린트 전용이다 (UpdateComponentTransformsOnly 는
         # 위치/회전만 세팅한다). 크기가 바뀌면 레벨을 다시 빌드해야 한다.
-        "misc": {"bFollowLocalPlayerCamera": bool(follow_player), "bExitOnEsc": True,
+        "misc": {"bFollowLocalPlayerCamera": bool(follow_player),
+                 "bExitOnEsc": bool(exit_on_esc),
                  "bOverrideViewportsFromExternalConfig": True,
                  "bOverrideTransformsFromExternalConfig": True},
         "scene": {
@@ -121,6 +123,10 @@ def demo():
     assert (ww, wh) == (2560, 698), (ww, wh)
     assert list(n["viewports"]) == ["vp_0"], list(n["viewports"])
     assert cfg["nDisplay"]["scene"]["screens"][SCREEN_ONE]["size"] == {"width": 1.0, "height": 1.0}
+    m = cfg["nDisplay"]["misc"]
+    assert m["bFollowLocalPlayerCamera"] is False and m["bExitOnEsc"] is True, m
+    m = build(w, "/Game/X/Y.Y", follow_player=True, exit_on_esc=False)[0]["nDisplay"]["misc"]
+    assert m["bFollowLocalPlayerCamera"] is True and m["bExitOnEsc"] is False, m
 
     ch = G.PanelChain([G.Panel("screen_left", 70.8, 39.8, 2560, 1440, dz=-4.6),
                        G.Panel("screen_right", 70.8, 39.8, 2560, 1440, dz=-4.6)],

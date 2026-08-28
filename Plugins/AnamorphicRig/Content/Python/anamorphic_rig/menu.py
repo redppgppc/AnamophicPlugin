@@ -213,6 +213,7 @@ def _opts(s):
         video=S.video_path_of(s), video_passthrough=s.video_passthrough,
         exposure_bias=s.exposure_bias, rig_origin=(0.0, 0.0, s.eye_height_m * S.M),
         show_floor=s.show_floor, eye_height=s.eye_height_m * S.M,
+        follow_player=s.follow_player, exit_on_esc=s.exit_on_esc,
         arc_seg=s.arc_seg, face_seg=s.face_seg, seg_v=s.seg_v,
         flip_v=s.flip_v, flip_winding=s.flip_winding)
 
@@ -332,7 +333,8 @@ def act_launch(s=None):
     wall = S.to_wall(s)
     o = _opts(s)
     cfg, ww, wh = CF.build(wall, "%s/%s.%s" % (o["asset_dir"], o["asset_name"], o["asset_name"]),
-                           o["res_w"])
+                           o["res_w"], follow_player=o["follow_player"],
+                           exit_on_esc=o["exit_on_esc"])
     CF.write(cfg, o["cfg_path"])
     exe = os.path.join(unreal.Paths.convert_relative_path_to_full(unreal.Paths.engine_dir()),
                        "Binaries", "Win64", "UnrealEditor.exe")
