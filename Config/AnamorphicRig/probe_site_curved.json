@@ -19,6 +19,8 @@
   "show_floor": true,
   "follow_player": false,
   "exit_on_esc": true,
+  "multi_node": true,
+  "fit_preview": false,
   "arc_seg": 24,
   "face_seg": 8,
   "seg_v": 4,
