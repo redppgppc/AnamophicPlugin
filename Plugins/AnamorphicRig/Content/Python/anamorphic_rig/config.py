@@ -32,7 +32,7 @@ def scale_regions(vps, ww, wh, k):
     return max(1, int(round(ww * k))), max(1, int(round(wh * k)))
 
 
-def screens_and_viewports(wall, res_w=2560, scale=1.0):
+def screens_and_viewports(wall, res_w, scale=1.0):
     """-> (screens, viewports, window_w, window_h)
 
     BentWall: 형상이 메시 정점에 이미 들어 있으므로 스크린은 항등 변환이어야 한다.
@@ -111,7 +111,7 @@ def node_order(nodes):
     return sorted(nodes, key=lambda n: int(n.rsplit("_", 1)[-1]))
 
 
-def build(wall, asset_path, res_w=2560, win_x=0, win_y=0,
+def build(wall, asset_path, res_w, win_x=0, win_y=0,
           follow_player=False, exit_on_esc=True, scale=1.0, per_node=0):
     """-> (설정 dict, 캔버스 가로, 캔버스 세로)
 
@@ -293,20 +293,21 @@ def launch_args(ue_exe, uproject, map_path, cfg_path, ww, wh,
 # --- 자체 점검 --------------------------------------------------------------
 def demo():
     w = G.BentWall()
-    cfg, ww, wh = build(w, "/Game/X/Y.Y")
+    cfg, ww, wh = build(w, "/Game/X/Y.Y", 2560)
     n = cfg["nDisplay"]["cluster"]["nodes"]["node_0"]
     assert (ww, wh) == (2560, 698), (ww, wh)
     assert list(n["viewports"]) == ["vp_0"], list(n["viewports"])
     assert cfg["nDisplay"]["scene"]["screens"][SCREEN_ONE]["size"] == {"width": 1.0, "height": 1.0}
     m = cfg["nDisplay"]["misc"]
     assert m["bFollowLocalPlayerCamera"] is False and m["bExitOnEsc"] is True, m
-    m = build(w, "/Game/X/Y.Y", follow_player=True, exit_on_esc=False)[0]["nDisplay"]["misc"]
+    m = build(w, "/Game/X/Y.Y", 2560, follow_player=True,
+              exit_on_esc=False)[0]["nDisplay"]["misc"]
     assert m["bFollowLocalPlayerCamera"] is True and m["bExitOnEsc"] is False, m
 
     ch = G.PanelChain([G.Panel("screen_left", 70.8, 39.8, 2560, 1440, dz=-4.6),
                        G.Panel("screen_right", 70.8, 39.8, 2560, 1440, dz=-4.6)],
                       [G.Seam(90.0, convex=True)], eye_dist=60.0, anchor_seam=1)
-    cfg, ww, wh = build(ch, "/Game/X/Y.Y")
+    cfg, ww, wh = build(ch, "/Game/X/Y.Y", 2560)
     n = cfg["nDisplay"]["cluster"]["nodes"]["node_0"]
     assert (ww, wh) == (5120, 1440), (ww, wh)
     assert sorted(n["viewports"]) == ["vp_left", "vp_right"], sorted(n["viewports"])
@@ -322,7 +323,7 @@ def demo():
 
     # 미리보기 축소는 뷰포트 사각형까지 같이 줄어야 한다. 창만 줄이면 오른쪽 패널이
     # 창 밖으로 나가 안 보인다. 다중 패널은 창 크기가 res_w 와 무관하므로 여기서 잡힌다.
-    cfg, ww, wh = build(ch, "/Game/X/Y.Y", scale=0.5)
+    cfg, ww, wh = build(ch, "/Game/X/Y.Y", 2560, scale=0.5)
     assert (ww, wh) == (2560, 720), (ww, wh)
     r = cfg["nDisplay"]["cluster"]["nodes"]["node_0"]["viewports"]
     assert r["vp_left"]["region"] == {"x": 0, "y": 0, "w": 1280, "h": 720}, r["vp_left"]
@@ -331,7 +332,7 @@ def demo():
         assert s["size"] == {"width": 70.8, "height": 39.8}, "스크린 실측(cm)은 안 줄어야 한다"
 
     # 멀티 노드: 뷰포트마다 창이 따로. 창 안에서 좌표는 원점부터 다시 잡힌다.
-    cfg, ww, wh = build(ch, "/Game/X/Y.Y", per_node=1)
+    cfg, ww, wh = build(ch, "/Game/X/Y.Y", 2560, per_node=1)
     assert (ww, wh) == (5120, 1440), (ww, wh)      # 반환은 전체 캔버스
     nodes = cfg["nDisplay"]["cluster"]["nodes"]
     assert node_order(nodes) == ["node_0", "node_1"], list(nodes)
@@ -347,7 +348,7 @@ def demo():
     assert "-dc_node=node_1" in launch_args("u", "p", "/M", "c", 1, 1, node="node_1")
 
     # 노드 수가 뷰포트 수 이상이면 안 쪼갠다 (지금까지의 동작)
-    assert node_order(build(ch, "/Game/X/Y.Y", per_node=9)[0]
+    assert node_order(build(ch, "/Game/X/Y.Y", 2560, per_node=9)[0]
                       ["nDisplay"]["cluster"]["nodes"]) == ["node_0"]
 
     # 창 배치: 들어가면 가운데, 넘치면 비율을 지켜 줄이고 가운데

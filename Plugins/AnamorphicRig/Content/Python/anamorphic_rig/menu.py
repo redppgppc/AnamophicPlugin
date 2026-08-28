@@ -124,7 +124,8 @@ def act_save(s=None):
     path = PR.save(name, S.to_dict(s))
     _log("저장: " + path)
     wall = S.to_wall(s)
-    lines, warns = R.summarize(wall, s.warn_grazing_deg, s.warn_band_pct, s.warn_density_ratio)
+    lines, warns = R.summarize(wall, S.res_w_of(s, wall), s.warn_grazing_deg,
+                               s.warn_band_pct, s.warn_density_ratio)
     for l in lines:
         _log(l)
     for w in warns:
@@ -209,7 +210,7 @@ def _opts(s):
     return dict(
         asset_dir="/Game/AnamorphicRig", asset_name=name, mesh_name="SM_" + tag,
         cfg_path=os.path.join(ROOT, "nDisplay", name + ".ndisplay"),
-        root=ROOT, res_w=2560,
+        root=ROOT, res_w=S.res_w_of(s),
         video=S.video_path_of(s), video_passthrough=s.video_passthrough,
         exposure_bias=s.exposure_bias, rig_origin=(0.0, 0.0, s.eye_height_m * S.M),
         show_floor=s.show_floor, eye_height=s.eye_height_m * S.M,
@@ -223,7 +224,8 @@ def _opts(s):
 def act_check(s=None):
     s = current_settings() if s is None else s      # 설정 대화상자가 편집 중인 값을 넘긴다
     wall = S.to_wall(s)
-    lines, warns = R.summarize(wall, s.warn_grazing_deg, s.warn_band_pct, s.warn_density_ratio)
+    lines, warns = R.summarize(wall, S.res_w_of(s, wall), s.warn_grazing_deg,
+                               s.warn_band_pct, s.warn_density_ratio)
     for l in lines:
         _log(l)
     for w in warns:

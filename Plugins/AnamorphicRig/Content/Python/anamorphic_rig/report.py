@@ -13,7 +13,7 @@ def _fmt_m(cm):
     return "%.2f m" % (cm / 100.0)
 
 
-def sizes(wall, res_w=2560):
+def sizes(wall, res_w):
     """벽 종류와 무관하게 크기와 비율만 뽑는다. -> 줄 목록.
 
     영상을 만들어 주는 사람이 실제로 묻는 건 "몇 픽셀짜리로 만들면 되냐" 하나다.
@@ -64,7 +64,7 @@ def _ratio_name(r):
     return "%s 에 가까움" % name if best < 0.06 else "%.2f : 1" % r
 
 
-def summarize(wall, warn_grazing=20.0, warn_band=60.0, warn_density=2.0, res_w=2560):
+def summarize(wall, res_w, warn_grazing=20.0, warn_band=60.0, warn_density=2.0):
     """-> (줄 목록, 경고 목록). 경고가 비어 있으면 형상이 쓸 만하다는 뜻."""
     lines, warns = [], []
     W = wall.developed()

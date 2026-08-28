@@ -192,9 +192,17 @@ class AnamorphicRigSettings(unreal.Object):
                 "보통 '영상 변환 (아나모픽)' 이 만든 _curved.mp4 를 넣는다"))
 
     # === 04 LED ===========================================================
+    wall_res_x = unreal.uproperty(int, meta=_m("04 LED", 30, DisplayName="벽 이미지 가로 (px)",
+        ClampMin="1", EditCondition="!wall_auto_res",
+        ToolTip="꺾인 벽은 한 장이라 가로 화소 하나면 된다. 세로는 전개 비율에서 나온다",
+        **BENT))
+    wall_auto_res = unreal.uproperty(bool, meta=_m("04 LED", 20,
+        DisplayName="해상도를 피치에서 자동",
+        ToolTip="끄면 아래 가로 화소를 직접 입력한다", **BENT))
     pitch_mm = unreal.uproperty(float, meta=_m("04 LED", 10, DisplayName="픽셀 피치 (mm)",
-        ClampMin="0", ToolTip="패널의 '해상도를 피치에서 자동' 이 켜져 있으면 크기에서 유도한다",
-        **FLAT))
+        ClampMin="0",
+        ToolTip="꺾인 벽: 전개 길이를 이 값으로 나눠 가로 화소를 유도한다. "
+                "다중 패널: 패널의 '해상도를 피치에서 자동' 이 켜져 있으면 크기에서 유도한다"))
 
     # === 03 스위트스팟 ====================================================
     rotate_deg = unreal.uproperty(float, meta=_m("03 스위트스팟", 50,
@@ -313,6 +321,7 @@ class AnamorphicRigSettings(unreal.Object):
             bend_deg=90.0, fillet_r_m=2.5, convex=True, base_m=0.0,
             eye_dist_m=35.0, eye_offset_m=0.0, eye_height_m=1.6,
             anchor_seam=1, rotate_deg=0.0, pitch_mm=7.8,
+            wall_auto_res=True, wall_res_x=0,
             video_passthrough=True, exposure_bias=0.0,
             hide_screen_messages=True, show_floor=True,
             follow_player=False, exit_on_esc=True, multi_node=False, fit_preview=True,
@@ -326,7 +335,8 @@ class AnamorphicRigSettings(unreal.Object):
 # 필드를 여기 한곳에만 적는다. 새 knob 을 추가하면 이 목록에도 넣어야 저장된다.
 SCALARS = ("bent_wall", "face_b_m", "face_a_m", "wall_height_m", "bend_deg", "fillet_r_m",
            "convex", "base_m", "eye_dist_m", "eye_offset_m", "eye_height_m", "anchor_seam",
-           "rotate_deg", "pitch_mm", "video_path", "video_passthrough", "exposure_bias",
+           "rotate_deg", "pitch_mm", "wall_auto_res", "wall_res_x",
+           "video_path", "video_passthrough", "exposure_bias",
            "hide_screen_messages", "show_floor", "follow_player", "exit_on_esc", "multi_node",
            "fit_preview",
            "arc_seg", "face_seg", "seg_v",
@@ -438,6 +448,33 @@ def apply_dict(s, d):
 
 
 # ---------------------------------------------------------------------------
+def res_w_of(s, wall=None):
+    """벽 이미지 가로 화소. -> int
+
+    꺾인 벽은 한 장이라 이 숫자 하나로 정해진다. 세로는 전개 비율에서 나온다
+    (config.screens_and_viewports). 다중 패널은 패널마다 해상도를 받으므로 이 값을 쓰지
+    않지만, 창 크기 계산 경로가 같아서 여기서도 돌려준다.
+
+    자동이면 피치에서 유도한다. 실제 LED 벽은 피치가 사양서에 있고 전개 길이는 도면에
+    있으니, 둘로 나누는 편이 화소 수를 손으로 세는 것보다 틀릴 일이 없다.
+    """
+    if not s.wall_auto_res:
+        if s.wall_res_x < 1:
+            raise RuntimeError(
+                "벽 이미지 가로 화소가 비어 있습니다.\n"
+                "04 LED 에서 '해상도를 피치에서 자동' 을 켜거나 가로 화소를 직접 넣으세요.")
+        return int(s.wall_res_x)
+    if s.pitch_mm <= 0:
+        raise RuntimeError(
+            "픽셀 피치가 0 입니다.\n"
+            "04 LED 에서 피치를 넣거나, '해상도를 피치에서 자동' 을 끄고 "
+            "가로 화소를 직접 넣으세요.")
+    if wall is None:
+        wall = to_wall(s)
+    return max(1, int(round(wall.developed() / (s.pitch_mm / 10.0))))   # cm / (px 당 cm)
+
+
+
 def to_projectors(s):
     """설정 -> projector.Projector 목록. 비어 있으면 빈 목록."""
     from . import projector as PJ

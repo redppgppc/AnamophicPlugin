@@ -157,7 +157,7 @@ def spawn_media_plate(mesh, dcra, video_abs):
     return plate
 
 
-def apply_regions(dcra, wall, res_w=2560, per_node=0):
+def apply_regions(dcra, wall, res_w, per_node=0):
     """DCRA 인스턴스의 뷰포트 Region 과 창 크기를 형상에 맞춘다.
 
     무비 렌더 큐는 .ndisplay 파일을 읽지 않고 이 값을 그대로 출력 해상도로 쓴다
