@@ -156,6 +156,11 @@ class AnamorphicRigSettings(unreal.Object):
         ClampMin="1", **BENT))
 
     # === 05 출력 ==========================================================
+    fit_preview = unreal.uproperty(bool, meta=_m("05 출력", 90,
+        DisplayName="화면에 맞춰 축소 (미리보기)",
+        ToolTip="창이 화면보다 크면 비율을 지켜 줄여 전체를 볼 수 있게 한다. 모니터 한 대에서 "
+                "눈으로 확인할 때 쓴다. 화소가 줄어드니 최종 확인용은 아니다. "
+                "끄면 원본 해상도 그대로 띄운다. 출력이 여러 개인 현장에서는 끈다"))
     multi_node = unreal.uproperty(bool, meta=_m("05 출력", 80,
         DisplayName="패널마다 창 따로 (멀티 노드)",
         ToolTip="켜면 뷰포트마다 노드를 하나씩 만들어 창이 따로 뜬다. LED 프로세서가 패널별로 "
@@ -308,7 +313,7 @@ class AnamorphicRigSettings(unreal.Object):
             anchor_seam=1, rotate_deg=0.0, pitch_mm=7.8,
             video_passthrough=True, exposure_bias=0.0,
             hide_screen_messages=True, show_floor=True,
-            follow_player=False, exit_on_esc=True, multi_node=False,
+            follow_player=False, exit_on_esc=True, multi_node=False, fit_preview=True,
             arc_seg=24, face_seg=8, seg_v=4, flip_v=True, flip_winding=False,
             warn_grazing_deg=20.0, warn_band_pct=60.0, warn_density_ratio=2.0,
             warn_blend_pct=8.0, blend_gamma=1.0, bake_blend=False,
@@ -321,6 +326,7 @@ SCALARS = ("bent_wall", "face_b_m", "face_a_m", "wall_height_m", "bend_deg", "fi
            "convex", "base_m", "eye_dist_m", "eye_offset_m", "eye_height_m", "anchor_seam",
            "rotate_deg", "pitch_mm", "video_path", "video_passthrough", "exposure_bias",
            "hide_screen_messages", "show_floor", "follow_player", "exit_on_esc", "multi_node",
+           "fit_preview",
            "arc_seg", "face_seg", "seg_v",
            "flip_v", "flip_winding", "warn_grazing_deg", "warn_band_pct", "warn_density_ratio",
            "warn_blend_pct", "blend_gamma", "bake_blend")

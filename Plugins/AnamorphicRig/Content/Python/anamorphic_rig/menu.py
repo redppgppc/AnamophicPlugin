@@ -214,7 +214,7 @@ def _opts(s):
         exposure_bias=s.exposure_bias, rig_origin=(0.0, 0.0, s.eye_height_m * S.M),
         show_floor=s.show_floor, eye_height=s.eye_height_m * S.M,
         follow_player=s.follow_player, exit_on_esc=s.exit_on_esc,
-        per_node=1 if s.multi_node else 0,
+        per_node=1 if s.multi_node else 0, fit_preview=s.fit_preview,
         arc_seg=s.arc_seg, face_seg=s.face_seg, seg_v=s.seg_v,
         flip_v=s.flip_v, flip_winding=s.flip_winding)
 
@@ -359,14 +359,15 @@ def act_launch(s=None):
     # 창이 모니터보다 크면 좌우가 잘려 착시를 볼 수가 없다. 비율을 지켜 줄이고 가운데에 놓는다.
     # 줄인 설정은 따로 쓴다. 원본 .ndisplay 는 현장에 나가는 파일이라 건드리지 않는다.
     path = o["cfg_path"]
-    w, h, x, y, k = CF.fit_window(ww, wh)
+    w, h, x, y, k = CF.fit_window(ww, wh, shrink=o["fit_preview"])
     if k < 1.0:
         cfg, w, h = CF.build(wall, asset, o["res_w"], follow_player=o["follow_player"],
                              exit_on_esc=o["exit_on_esc"], scale=k, per_node=o["per_node"])
         path = o["cfg_path"][:-len(".ndisplay")] + "_preview.ndisplay"
         CF.write(cfg, path)
         w, h, x, y, _ = CF.fit_window(w, h)
-        _log("창 %dx%d 가 모니터보다 커서 %d%% 로 줄였습니다 -> %dx%d" % (ww, wh, k * 100, w, h))
+        _log("창 %dx%d 가 화면보다 커서 %d%% 로 줄였습니다 -> %dx%d "
+             "(원본 크기로 보려면 '화면에 맞춰 축소' 를 끌 것)" % (ww, wh, k * 100, w, h))
         _log("미리보기 설정: %s (원본 %s 는 그대로)"
              % (os.path.basename(path), os.path.basename(o["cfg_path"])))
     # 노드마다 프로세스가 하나씩. 프라이머리(node_0)가 먼저 떠야 나머지가 붙는다.
@@ -382,6 +383,10 @@ def act_launch(s=None):
              % (nname, r["w"], r["h"], x + r["x"], y + r["y"],
                 ", ".join(sorted(nodes[nname]["viewports"]))))
         subprocess.Popen(args)
+    area = CF.screen_bounds()
+    if area and (ww > area[0] or wh > area[1]) and not o["fit_preview"]:
+        _log("캔버스 %dx%d 가 화면 %dx%d 보다 큽니다. 화면 밖 창은 안 보입니다 "
+             "(현장 출력이 붙으면 그 자리에 나갑니다)" % (ww, wh, area[0], area[1]))
     if len(nodes) > 1:
         _log("노드 %d 개. 프레임 동기는 소프트웨어 배리어(ethernet)다. "
              "창을 하나씩 닫으면 나머지가 동기를 기다리며 멈춘다" % len(nodes))

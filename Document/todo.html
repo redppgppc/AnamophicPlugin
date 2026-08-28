@@ -172,6 +172,16 @@ td code { white-space:nowrap; }
               있었으나 호출부가 안 넘겨 항상 꺼져 있었다. 기본값은 기존 동작 그대로
               (따라가기 끔 / ESC 종료 켬)</td></tr>
       <tr><td><span class="chip chip--done">완료</span></td>
+          <td>창 배치를 가상 데스크톱 기준으로 + 축소 끄기 (2026-08-27)</td>
+          <td>주 모니터 작업 영역만 재서, 모니터가 둘인데도 3840 캔버스를 66% 로 줄이고 있었다.
+              <code>screen_bounds()</code> 가 가상 데스크톱을 쓰고,
+              <code>05 출력 &gt; 화면에 맞춰 축소</code> 로 끌 수 있다 (현장은 끈다)</td></tr>
+      <tr><td><span class="chip chip--done">완료</span></td>
+          <td><code>ensure_asset</code> 이 노드 구성까지 비교 (2026-08-27)</td>
+          <td>뷰포트 이름만 봐서, 노드만 쪼갠 변경을 못 알아채고 재임포트를 건너뛰었다.
+              <code>asset_layout()</code> 으로 노드별 구성을 대조. <code>형상 점검</code> 에도
+              에셋 구성 대조를 표시</td></tr>
+      <tr><td><span class="chip chip--done">완료</span></td>
           <td>멀티 노드 (패널마다 창 따로) (2026-08-27)</td>
           <td><code>CF.make_nodes()</code> 가 뷰포트를 노드로 쪼갠다.
               <code>apply_regions</code> 의 단일 노드 assert 제거, 노드마다 프로세스 기동.

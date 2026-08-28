@@ -176,7 +176,26 @@ def work_area():
         return None
 
 
-def fit_window(ww, wh, area=None):
+def screen_bounds():
+    """창을 놓을 영역. -> (가로, 세로) 또는 None.
+
+    모니터가 여럿이면 가상 데스크톱 전체를 쓴다. 주 모니터만 보면 두 번째 창을 놓을
+    자리가 없다고 판단해 쓸데없이 줄인다. 현장은 출력이 여러 개인 게 정상이다.
+    모니터가 하나면 작업 영역(작업표시줄 제외)을 그대로 쓴다.
+    """
+    wa = work_area()
+    try:
+        import ctypes
+        u = ctypes.windll.user32
+        vw, vh = u.GetSystemMetrics(78), u.GetSystemMetrics(79)   # SM_CX/CYVIRTUALSCREEN
+        if vw and vh and wa and (vw > wa[0] or vh > wa[1]):
+            return (vw, vh)
+    except Exception:
+        pass
+    return wa
+
+
+def fit_window(ww, wh, area=None, shrink=True):
     """창을 작업 영역 한가운데에 넣는다. -> (가로, 세로, x, y, 배율)
 
     벽 해상도가 모니터보다 크면 창이 잘린다. 좌우가 잘리면 착시가 맞는지 볼 수가 없다.
@@ -184,13 +203,13 @@ def fit_window(ww, wh, area=None):
     작업 영역을 못 구하면 (0, 0) 에 원본 크기로 둔다. 지금까지의 동작이다.
     """
     if area is None:
-        area = work_area()
-    if not area or not ww or not wh:
-        return ww, wh, 0, 0, 1.0
+        area = screen_bounds()
+    if not shrink or not area or not ww or not wh:
+        return ww, wh, 0, 0, 1.0     # 원점부터. 현장 출력 좌표와 그대로 맞춘다
     sw, sh = area
     k = min(1.0, float(sw) / ww, float(sh) / wh)
     w, h = int(ww * k), int(wh * k)
-    return w, h, (sw - w) // 2, (sh - h) // 2, k
+    return w, h, max(0, (sw - w) // 2), max(0, (sh - h) // 2), k
 
 
 def launch_args(ue_exe, uproject, map_path, cfg_path, ww, wh,
@@ -283,6 +302,8 @@ def demo():
     assert (w, h) == (1920, 523) and k == 0.75, (w, h, k)
     assert x == 0 and y == (1032 - 523) // 2, (x, y)
     assert abs(w / float(h) - 2560 / 698.0) < 0.01, "비율이 바뀌었다"
+    # 축소를 끄면 원본 크기 그대로, 화면 원점부터. 현장은 출력이 여러 개다
+    assert fit_window(3840, 1440, (2560, 1440), shrink=False) == (3840, 1440, 0, 0, 1.0)
     print("config ok")
 
 
