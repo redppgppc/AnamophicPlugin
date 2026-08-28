@@ -4,7 +4,7 @@
     "version": "5.00",
     "assetPath": "/Game/AnamorphicRig/NDC_probe_site.NDC_probe_site",
     "misc": {
-      "bFollowLocalPlayerCamera": true,
+      "bFollowLocalPlayerCamera": false,
       "bExitOnEsc": true,
       "bOverrideViewportsFromExternalConfig": true,
       "bOverrideTransformsFromExternalConfig": true
