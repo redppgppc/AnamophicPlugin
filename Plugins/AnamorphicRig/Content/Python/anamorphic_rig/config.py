@@ -40,7 +40,9 @@ def screens_and_viewports(wall, res_w, scale=1.0):
     scale:    미리보기용 축소. 스크린(cm)은 그대로 두고 뷰포트 화소만 줄인다.
     """
     if isinstance(wall, G.BentWall):
-        h = int(round(res_w * wall.height / wall.developed()))
+        # 둘 다 짝수라야 한다. 홀수면 MP4 인코더를 못 잡는다 (geometry.even 참고).
+        res_w = G.even(res_w)
+        h = G.even(round(res_w * wall.height / wall.developed()))
         screens = {SCREEN_ONE: dict(
             parentId="", location=dict(x=0.0, y=0.0, z=0.0),
             rotation=dict(pitch=0.0, yaw=0.0, roll=0.0), size=dict(width=1.0, height=1.0))}
@@ -367,6 +369,16 @@ def demo():
     # 축소를 끄면 원본 크기 그대로, 화면 원점부터. 현장은 출력이 여러 개다
     assert fit_window(3840, 1440, (2560, 1440), shrink=False) == (3840, 1440, 0, 0, 1.0)
     assert isinstance(monitors(), list)      # 못 구해도 빈 목록이지 예외는 아니다
+
+    # 화소는 언제나 짝수. 홀수면 MP4 인코더를 못 잡는다.
+    w2 = G.BentWall(face_b=365.0, face_a=365.0, height=210.0, bend_deg=90.0, fillet_r=25.0)
+    for rw in (987, 2560, 1):
+        _, _, a2, b2 = screens_and_viewports(w2, rw)
+        assert a2 % 2 == 0 and b2 % 2 == 0, (rw, a2, b2)
+    ch2 = G.PanelChain([G.Panel("p_a", 77.0, 21.0), G.Panel("p_b", 77.0, 21.0)],
+                       [G.Seam(90.0)], eye_dist=350.0, pitch_mm=7.8)
+    for p2 in ch2.panels:
+        assert p2.rw % 2 == 0 and p2.rh % 2 == 0, (p2.name, p2.rw, p2.rh)
 
     # 모니터 배치: 노드 i 를 모니터 i 안에 가운데. 개수와 무관하게 같은 규칙이다.
     two = [(0, 0, 2560, 1440), (2560, 0, 2560, 1440)]

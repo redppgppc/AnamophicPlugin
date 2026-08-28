@@ -463,7 +463,7 @@ def res_w_of(s, wall=None):
             raise RuntimeError(
                 "벽 이미지 가로 화소가 비어 있습니다.\n"
                 "04 LED 에서 '해상도를 피치에서 자동' 을 켜거나 가로 화소를 직접 넣으세요.")
-        return int(s.wall_res_x)
+        return G.even(s.wall_res_x)
     if s.pitch_mm <= 0:
         raise RuntimeError(
             "픽셀 피치가 0 입니다.\n"
@@ -471,7 +471,7 @@ def res_w_of(s, wall=None):
             "가로 화소를 직접 넣으세요.")
     if wall is None:
         wall = to_wall(s)
-    return max(1, int(round(wall.developed() / (s.pitch_mm / 10.0))))   # cm / (px 당 cm)
+    return G.even(round(wall.developed() / (s.pitch_mm / 10.0)))   # cm / (px 당 cm)
 
 
 

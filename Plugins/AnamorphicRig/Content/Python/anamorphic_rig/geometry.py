@@ -52,6 +52,21 @@ def span_deg(wall, samples=256):
 # ===========================================================================
 # 패널 N 장
 # ===========================================================================
+def even(n):
+    """화소 수를 짝수로 올린다.
+
+    h.264 는 4:2:0 크로마 서브샘플링이라 가로세로가 홀수면 **인코더가 아예 안 잡힌다.**
+    무비 렌더 큐도 ffmpeg 도 같은 제약을 받는다.
+
+        Failed to initialize Movie Pipeline MP4 writer. An encoder that supports
+        the render resolution ... was not found.
+
+    벽에서 1 px 차이는 보이지 않는다. 홀수는 영상이 아예 안 만들어진다. 짝수가 낫다.
+    """
+    n = int(n)
+    return max(2, n + (n & 1))
+
+
 class Panel(object):
     """평평한 화면 한 장.
 
@@ -197,7 +212,7 @@ class PanelChain(object):
             if p.rw is None or p.rh is None:
                 assert self.pitch_mm, "%s: rw/rh 도 pitch_mm 도 없다" % p.name
                 cm = self.pitch_mm / 10.0
-                p.rw, p.rh = int(round(p.w / cm)), int(round(p.h / cm))
+                p.rw, p.rh = even(round(p.w / cm)), even(round(p.h / cm))
             if p.region is None:
                 p.region = (px, 0)
             px = p.region[0] + p.rw
