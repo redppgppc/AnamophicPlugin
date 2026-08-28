@@ -1612,6 +1612,20 @@ md.set_vertex_instance_uv(inst, unreal.Vector2D(u / W, 1.0 - f), 0)
     <code>05 출력 &gt; ESC 로 종료</code> 는 기본이 켜짐이다. 개발 중에는 편하지만
     <strong>전시 현장에서는 꺼 둔다.</strong> 관람자가 키보드에 닿을 수 있으면 화면이 꺼진다.
   </p>
+  <div class="note note--warn">
+    <span class="note-label">마우스 룩은 묶어 두지 않는다</span>
+    <p>
+      <code>플레이어 카메라 따라가기</code> 를 켜면 리그가 카메라를 따라가므로,
+      <strong>마우스가 조금만 움직여도 벽 화면이 통째로 돈다.</strong> 창은 만들어진 뒤
+      화면 가운데로 옮겨지는데 그때 큰 마우스 델타가 한 번 생겨, 첫 포커스에서 화면이 홱 돈다.
+      그래서 <code>Config/DefaultInput.ini</code> 에서 <code>Turn</code>/<code>LookUp</code> 의
+      마우스 바인딩을 뺐다. WASD/QE 이동만 남는다.
+    </p>
+    <p>
+      방향 전환이 필요하면 <strong>키나 게임패드 축에</strong> 붙인다. 마우스는 창 포커스가
+      바뀔 때마다 튀어서 전시에 맞지 않는다.
+    </p>
+  </div>
 
   <h3>12.3 노드가 여럿이면</h3>
   <div class="tablewrap"><table>
