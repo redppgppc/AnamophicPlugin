@@ -16,11 +16,28 @@ def viewport_name(screen_name):
     return "vp_" + screen_name.split("_", 1)[-1]
 
 
-def screens_and_viewports(wall, res_w=2560):
+def scale_regions(vps, ww, wh, k):
+    """뷰포트 사각형과 창을 같은 비율로 줄인다. 자리에서 고친다.
+
+    미리보기 전용이다. 배치는 그대로 두고 화소 수만 줄인다. res_w 를 줄이는 것으로는
+    안 된다. 다중 패널은 창 크기가 패널 해상도에서 나오므로 res_w 를 무시하기 때문이다.
+    """
+    if k >= 1.0:
+        return ww, wh
+    for v in vps.values():
+        r = v["region"]
+        for key in ("x", "y", "w", "h"):
+            r[key] = int(round(r[key] * k))
+        r["w"], r["h"] = max(1, r["w"]), max(1, r["h"])
+    return max(1, int(round(ww * k))), max(1, int(round(wh * k)))
+
+
+def screens_and_viewports(wall, res_w=2560, scale=1.0):
     """-> (screens, viewports, window_w, window_h)
 
     BentWall: 형상이 메시 정점에 이미 들어 있으므로 스크린은 항등 변환이어야 한다.
               size 1x1 이라야 임포트 때 컴포넌트 스케일이 1 로 남는다.
+    scale:    미리보기용 축소. 스크린(cm)은 그대로 두고 뷰포트 화소만 줄인다.
     """
     if isinstance(wall, G.BentWall):
         h = int(round(res_w * wall.height / wall.developed()))
@@ -30,7 +47,7 @@ def screens_and_viewports(wall, res_w=2560):
         vps = {viewport_name(SCREEN_ONE): dict(
             camera=EYE_NAME, region=dict(x=0, y=0, w=res_w, h=h),
             projectionPolicy=dict(type="mesh", parameters=dict(mesh_component=SCREEN_ONE)))}
-        return screens, vps, res_w, h
+        return (screens, vps) + scale_regions(vps, res_w, h, scale)
 
     screens, vps = {}, {}
     for p in wall.panels:
@@ -45,13 +62,13 @@ def screens_and_viewports(wall, res_w=2560):
     assert len(vps) == len(wall.panels), \
         "뷰포트 이름이 충돌한다 (패널 이름의 첫 '_' 뒷부분이 겹침)"
     ww, wh = wall.window_size()
-    return screens, vps, ww, wh
+    return (screens, vps) + scale_regions(vps, ww, wh, scale)
 
 
 def build(wall, asset_path, res_w=2560, win_x=0, win_y=0,
-          follow_player=False, exit_on_esc=True):
+          follow_player=False, exit_on_esc=True, scale=1.0):
     """-> (설정 dict, 창 가로, 창 세로)"""
-    screens, vps, ww, wh = screens_and_viewports(wall, res_w)
+    screens, vps, ww, wh = screens_and_viewports(wall, res_w, scale)
     cfg = {"nDisplay": {
         "description": "Anamorphic Rig: %s" % type(wall).__name__,
         "version": "5.00",
@@ -178,6 +195,16 @@ def demo():
             cfg["nDisplay"]["scene"]["screens"], "mesh_component 가 어떤 스크린도 안 가리킴"
     args = launch_args("ue.exe", "p.uproject", "/Game/M", "c.ndisplay", ww, wh)
     assert "ResX=%d" % ww in args and "ResY=%d" % wh in args
+
+    # 미리보기 축소는 뷰포트 사각형까지 같이 줄어야 한다. 창만 줄이면 오른쪽 패널이
+    # 창 밖으로 나가 안 보인다. 다중 패널은 창 크기가 res_w 와 무관하므로 여기서 잡힌다.
+    cfg, ww, wh = build(ch, "/Game/X/Y.Y", scale=0.5)
+    assert (ww, wh) == (2560, 720), (ww, wh)
+    r = cfg["nDisplay"]["cluster"]["nodes"]["node_0"]["viewports"]
+    assert r["vp_left"]["region"] == {"x": 0, "y": 0, "w": 1280, "h": 720}, r["vp_left"]
+    assert r["vp_right"]["region"] == {"x": 1280, "y": 0, "w": 1280, "h": 720}, r["vp_right"]
+    for name, s in cfg["nDisplay"]["scene"]["screens"].items():
+        assert s["size"] == {"width": 70.8, "height": 39.8}, "스크린 실측(cm)은 안 줄어야 한다"
 
     # 창 배치: 들어가면 가운데, 넘치면 비율을 지켜 줄이고 가운데
     assert fit_window(800, 600, (1920, 1032)) == (800, 600, 560, 216, 1.0)

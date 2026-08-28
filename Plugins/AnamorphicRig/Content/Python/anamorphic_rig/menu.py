@@ -347,8 +347,8 @@ def act_launch(s=None):
     if k < 1.0:
         cfg, w, h = CF.build(wall,
                              "%s/%s.%s" % (o["asset_dir"], o["asset_name"], o["asset_name"]),
-                             max(64, int(o["res_w"] * k)),
-                             follow_player=o["follow_player"], exit_on_esc=o["exit_on_esc"])
+                             o["res_w"], follow_player=o["follow_player"],
+                             exit_on_esc=o["exit_on_esc"], scale=k)
         path = o["cfg_path"][:-len(".ndisplay")] + "_preview.ndisplay"
         CF.write(cfg, path)
         w, h, x, y, _ = CF.fit_window(w, h)
