@@ -231,6 +231,21 @@ def act_check(s=None):
     o = _opts(s)
     lines = lines + ["", "프리셋 %s -> 에셋 %s/%s"
                      % (S.preset_of(s) or PR.active(), o["asset_dir"], o["asset_name"])]
+
+    # DCRA 에셋에 구워진 노드 구성. 설정과 다르면 '벽 만들기' 전까지 실행 결과가 어긋난다.
+    # 노드만 바뀌었을 때는 뷰포트 이름이 그대로라 눈으로 구분이 안 된다. 여기서 대조해 준다.
+    asset = "%s/%s" % (o["asset_dir"], o["asset_name"])
+    want = dict((n, sorted(v["viewports"])) for n, v in
+                CF.build(wall, "%s.%s" % (asset, o["asset_name"]), o["res_w"],
+                         per_node=o["per_node"])[0]["nDisplay"]["cluster"]["nodes"].items())
+    have = B.asset_layout(asset, o["asset_name"])
+    lines += ["", "설정이 원하는 노드  %s" % want,
+              "에셋에 구워진 노드  %s" % ("없음 (아직 안 만듦)" if have is None else have)]
+    if have != want:
+        lines.append("!! 다릅니다. '벽 만들기' 를 눌러야 반영됩니다")
+        warns = warns + ["에셋 노드 구성이 설정과 다르다. '벽 만들기' 를 돌릴 것"]
+    for l in lines[-4:]:
+        _log(l)
     _dialog("형상 점검", "\n".join(lines + ([""] + ["! " + w for w in warns] if warns else [])))
 
 
