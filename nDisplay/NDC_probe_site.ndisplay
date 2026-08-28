@@ -4,7 +4,7 @@
     "version": "5.00",
     "assetPath": "/Game/AnamorphicRig/NDC_probe_site.NDC_probe_site",
     "misc": {
-      "bFollowLocalPlayerCamera": false,
+      "bFollowLocalPlayerCamera": true,
       "bExitOnEsc": true,
       "bOverrideViewportsFromExternalConfig": true,
       "bOverrideTransformsFromExternalConfig": true
@@ -71,7 +71,7 @@
       },
       "sync": {
         "renderSyncPolicy": {
-          "type": "none",
+          "type": "ethernet",
           "parameters": {}
         },
         "inputSyncPolicy": {
@@ -87,7 +87,7 @@
           "window": {
             "x": 0,
             "y": 0,
-            "w": 3840,
+            "w": 1280,
             "h": 1440
           },
           "viewports": {
@@ -105,11 +105,24 @@
                   "mesh_component": "screen_left"
                 }
               }
-            },
+            }
+          }
+        },
+        "node_1": {
+          "host": "127.0.0.1",
+          "sound": false,
+          "fullScreen": false,
+          "window": {
+            "x": 1280,
+            "y": 0,
+            "w": 2560,
+            "h": 1440
+          },
+          "viewports": {
             "vp_right": {
               "camera": "DefaultViewPoint",
               "region": {
-                "x": 1280,
+                "x": 0,
                 "y": 0,
                 "w": 2560,
                 "h": 1440

@@ -213,11 +213,14 @@ def apply_regions(dcra, wall, res_w=2560, per_node=0):
     unreal.log("뷰포트 해상도 적용: " + " / ".join(said))
 
 
-def asset_viewports(asset, name):
-    """에셋에 구워진 뷰포트 이름들. 못 읽으면 None.
+def asset_layout(asset, name):
+    """에셋에 구워진 노드 -> 뷰포트 이름 목록. 못 읽으면 None.
 
     블루프린트 CDO 에서는 컴포넌트를 열거할 수 없어서 (항상 빈 목록이 나온다)
-    설정 데이터의 뷰포트 이름으로 판정한다. 뷰포트와 스크린은 1:1 이라 같은 얘기다.
+    설정 데이터로 판정한다. 뷰포트와 스크린은 1:1 이라 같은 얘기다.
+
+    뷰포트 이름만 보면 안 된다. 노드를 쪼개도 이름은 그대로라, 멀티 노드로 바꾼 것을
+    못 알아채고 재임포트를 건너뛴다. 그러면 apply_regions 가 노드가 없다고 죽는다.
     """
     cls = unreal.load_object(None, "%s.%s_C" % (asset, name))
     if cls is None:
@@ -226,10 +229,10 @@ def asset_viewports(asset, name):
         cfg = unreal.get_default_object(cls).get_editor_property("current_config_data")
         if cfg is None:
             return None
-        got = []
-        for node in cfg.get_editor_property("cluster").get_editor_property("nodes").values():
-            got += list(node.get_editor_property("viewports").keys())
-        return sorted(got)
+        got = {}
+        for nname, node in cfg.get_editor_property("cluster").get_editor_property("nodes").items():
+            got[str(nname)] = sorted(str(v) for v in node.get_editor_property("viewports").keys())
+        return got
     except Exception:
         return None
 
@@ -237,9 +240,13 @@ def asset_viewports(asset, name):
 def ensure_asset(asset, name, cfg_path, want):
     """설정에 맞는 nDisplay 에셋을 준비한다. 구성이 다르면 지우고 다시 임포트한다.
 
+    want 는 {노드 이름: [뷰포트 이름]} 이다.
+
     nDisplay 임포트 팩토리는 기존 에셋을 덮어쓰지 못한다. 그래서 지우는 수밖에 없다.
     지우기 전에 이 에셋을 쓰는 액터는 이미 파괴돼 있어야 한다 (build_level 이 먼저 한다).
     """
+    want = {str(k): sorted(v) for k, v in want.items()}
+
     def do_import():
         task = unreal.AssetImportTask()
         task.filename = cfg_path
@@ -251,12 +258,12 @@ def ensure_asset(asset, name, cfg_path, want):
         do_import()
         return
 
-    have = asset_viewports(asset, name)
-    if have is not None and have == sorted(want):
+    have = asset_layout(asset, name)
+    if have == want:
         return                      # 구성이 같으면 그대로 쓴다. 시퀀스 바인딩도 유지된다.
 
-    unreal.log("[AnamorphicRig] 에셋의 뷰포트가 %s 라 설정(%s)과 다릅니다. 다시 만듭니다"
-               % (have, sorted(want)))
+    unreal.log("[AnamorphicRig] 에셋 구성이 %s 라 설정(%s)과 다릅니다. 다시 만듭니다"
+               % (have, want))
     # 참조가 남아 있으면 지우기가 실패한다. 실패하면 사람이 지울 수 있게 안내한다.
     if not unreal.EditorAssetLibrary.delete_asset(asset):
         raise RuntimeError(
@@ -264,10 +271,11 @@ def ensure_asset(asset, name, cfg_path, want):
             "  에셋에 있는 것: %s\n  설정이 원하는 것: %s\n"
             "콘텐츠 브라우저에서 %s 를 직접 지우고 다시 빌드하세요.\n"
             "(다른 레벨이나 시퀀스가 이 에셋을 참조하고 있으면 지워지지 않습니다)"
-            % (have, sorted(want), asset))
+            % (have, want, asset))
     do_import()
     if not unreal.EditorAssetLibrary.does_asset_exist(asset):
         raise RuntimeError("에셋을 지웠지만 다시 임포트하지 못했습니다: " + cfg_path)
+
 
 
 def resolve_video(video, root):
@@ -318,7 +326,8 @@ def build_level(wall, opts):
                            follow_player=opts.get("follow_player", False),
                            exit_on_esc=opts.get("exit_on_esc", True), per_node=per_node)
     CF.write(cfg, opts["cfg_path"])
-    want = [v for n in cfg["nDisplay"]["cluster"]["nodes"].values() for v in n["viewports"]]
+    want = dict((n, list(v["viewports"]))
+                for n, v in cfg["nDisplay"]["cluster"]["nodes"].items())
     ensure_asset(asset, opts["asset_name"], opts["cfg_path"], want)
 
     if opts.get("video_passthrough"):
