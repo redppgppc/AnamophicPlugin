@@ -34,6 +34,7 @@
   "warn_blend_pct": 8.0,
   "blend_gamma": 1.0,
   "bake_blend": false,
+  "warn_video_w": 4096,
   "version": 2,
   "video_path": "",
   "panels": [

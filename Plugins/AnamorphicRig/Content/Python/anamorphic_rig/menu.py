@@ -200,6 +200,19 @@ def _safe(name):
     return out.strip("_") or "Preset"
 
 
+def _warn_video_w(s, plan_w):
+    """영상 가로가 인코더 상한을 넘으면 로그에 남기고 문자열을 돌려준다. 안 넘으면 None.
+
+    형상 점검에만 두면 늦다. 해상도가 바뀌는 자리(벽 만들기)와 실제로 뽑는 자리
+    (무비 렌더 큐 점검, 영상 변환)에서 각각 알려 준다. 오래 걸리는 작업이 끝난 뒤에
+    인코더가 실패하는 것이 가장 나쁘다.
+    """
+    w = R.video_warning(plan_w, s.warn_video_w)
+    if w:
+        unreal.log_warning("[AnamorphicRig] " + w)
+    return w
+
+
 def _opts(s):
     """설정 -> build_level 이 쓰는 dict.
 
@@ -344,8 +357,12 @@ def act_build(s=None):
     bad = wall.check()
     if bad:
         raise RuntimeError("형상이 잘못됨:\n  " + "\n  ".join(bad))
-    B.build_level(wall, _opts(s))
+    o = _opts(s)
+    B.build_level(wall, o)
     _log("빌드 완료")
+    w = _warn_video_w(s, V.Plan(wall, o["res_w"]).out_w)
+    if w:
+        _dialog("벽 만들기", "빌드는 끝났습니다." + chr(10) * 2 + "! " + w)
 
 
 def act_launch(s=None):
@@ -514,6 +531,9 @@ def _convert(curved):
     s = current_settings()
     wall = S.to_wall(s)
     plan = V.Plan(wall, S.res_w_of(s, wall))
+    w = _warn_video_w(s, plan.out_w)
+    if w and not _ask("영상 변환", "! " + w + chr(10) * 2 + "그래도 진행할까요?"):
+        return
     src = _pick_file("변환할 영상 고르기")
     if not src:
         return
@@ -591,6 +611,11 @@ def act_check_mrq():
     lines += ["", "무비 렌더 큐는 .ndisplay 파일이 아니라 레벨의 DCRA 에 구워진 값을 쓴다.",
               "'벽 만들기' 를 한 번 돌리면 위 값이 DCRA 에 반영된다.",
               "Movie Graph 의 Output Resolution 은 별개이며 전 뷰포트에 공통 적용된다."]
+    w = _warn_video_w(s, max(v["region"]["w"] for v in vps.values()))
+    if w:
+        lines += ["", "! " + w,
+                  "  MRQ 의 MP4 인코더는 플랫폼 하드웨어 인코더라 대개 4096 에서 막힌다.",
+                  "  이미지 시퀀스 노드로 바꾸거나 벽 해상도를 낮출 것."]
     for l in lines:
         _log(l)
     _dialog("무비 렌더 큐 점검", "\n".join(lines))

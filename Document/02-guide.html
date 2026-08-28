@@ -1820,6 +1820,39 @@ md.set_vertex_instance_uv(inst, unreal.Vector2D(u / W, 1.0 - f), 0)
     다만 <strong>모든 경고가 같이 꺼진다.</strong> 개발 중에는 켜 두는 쪽이 안전하다.
   </p>
 
+  <h4>MP4 인코더를 못 잡는다 / 무비 렌더 큐가 실패한다</h4>
+  <div class="block"><pre>Failed to initialize Movie Pipeline MP4 writer. An encoder that supports
+the render resolution and requested MP4 encode options was not found.</pre></div>
+  <p>
+    둘 중 하나다.
+  </p>
+  <ul>
+    <li><strong>가로세로가 홀수</strong> — h.264 는 4:2:0 이라 짝수라야 한다.
+        지금은 <code>geometry.even()</code> 이 화소가 나오는 자리마다 짝수로 올린다</li>
+    <li><strong>너무 크다</strong> — MRQ 의 MP4 인코더는 플랫폼 하드웨어 인코더라
+        대개 <strong>4096</strong> 에서 막힌다. 77 m 벽을 피치에서 유도하면 9872 가 나온다</li>
+  </ul>
+  <p>
+    <code>07 경고 기준 &gt; 영상 가로 경고 (px)</code> 가 이 상황을 미리 잡는다.
+    <strong>벽 만들기 · 무비 렌더 큐 점검 · 영상 변환 · 형상 점검</strong> 네 자리에서
+    각각 알려 준다. 영상 변환은 오래 걸리므로 시작 전에 물어본다.
+  </p>
+  <div class="tablewrap"><table>
+    <thead><tr><th>선택</th><th>어떻게</th><th>대가</th></tr></thead>
+    <tbody>
+      <tr><td>이미지 시퀀스</td>
+          <td>MRQ 그래프에서 <code>MP4 Encoder</code> 노드를 <code>PNG Sequence</code> 로 교체</td>
+          <td>해상도 제한이 없다. 디스크를 많이 먹고, <code>렌더 결과 좌우 합치기</code> 는
+              아직 mp4 만 찾는다</td></tr>
+      <tr><td>해상도를 낮춤</td>
+          <td><code>04 LED &gt; 해상도를 피치에서 자동</code> 을 끄고 4096 이하를 넣는다</td>
+          <td>벽 화소보다 낮아진다. 검수용이지 납품용은 아니다</td></tr>
+      <tr><td>프로젝터 경로</td>
+          <td><code>프로젝터 영상 변환 (원본에서)</code></td>
+          <td>중간 벽 이미지를 아예 안 만들어 상한에 안 걸린다. 프로젝터 현장에 한한다</td></tr>
+    </tbody>
+  </table></div>
+
   <h4>클러스터 창 크기가 이상하다 / 좌우가 잘린다 / 축소돼 나온다</h4>
   <p>
     <code>05 출력 &gt; 화면에 맞춰 축소 (미리보기)</code> 가 켜져 있으면, 캔버스가 화면보다 클 때
