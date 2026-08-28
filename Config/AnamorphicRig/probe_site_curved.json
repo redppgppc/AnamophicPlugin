@@ -13,6 +13,8 @@
   "anchor_seam": 1,
   "rotate_deg": 0.0,
   "pitch_mm": 7.800000190734863,
+  "wall_auto_res": true,
+  "wall_res_x": 0,
   "video_passthrough": true,
   "exposure_bias": 0.0,
   "hide_screen_messages": true,
