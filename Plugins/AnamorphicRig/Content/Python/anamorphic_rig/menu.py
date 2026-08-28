@@ -340,9 +340,24 @@ def act_launch(s=None):
                        "Binaries", "Win64", "UnrealEditor.exe")
     uproject = unreal.Paths.convert_relative_path_to_full(unreal.Paths.get_project_file_path())
     level = unreal.EditorLevelLibrary.get_editor_world().get_path_name().split(".")[0]
-    args = CF.launch_args(exe, uproject, level, o["cfg_path"], ww, wh,
+    # 창이 모니터보다 크면 좌우가 잘려 착시를 볼 수가 없다. 비율을 지켜 줄이고 가운데에 놓는다.
+    # 줄인 설정은 따로 쓴다. 원본 .ndisplay 는 현장에 나가는 파일이라 건드리지 않는다.
+    path = o["cfg_path"]
+    w, h, x, y, k = CF.fit_window(ww, wh)
+    if k < 1.0:
+        cfg, w, h = CF.build(wall,
+                             "%s/%s.%s" % (o["asset_dir"], o["asset_name"], o["asset_name"]),
+                             max(64, int(o["res_w"] * k)),
+                             follow_player=o["follow_player"], exit_on_esc=o["exit_on_esc"])
+        path = o["cfg_path"][:-len(".ndisplay")] + "_preview.ndisplay"
+        CF.write(cfg, path)
+        w, h, x, y, _ = CF.fit_window(w, h)
+        _log("창 %dx%d 가 모니터보다 커서 %d%% 로 줄였습니다 -> %dx%d" % (ww, wh, k * 100, w, h))
+        _log("미리보기 설정: %s (원본 %s 는 그대로)"
+             % (os.path.basename(path), os.path.basename(o["cfg_path"])))
+    args = CF.launch_args(exe, uproject, level, path, w, h, win_x=x, win_y=y,
                           hide_screen_messages=s.hide_screen_messages)
-    _log("클러스터 실행: %dx%d" % (ww, wh))
+    _log("클러스터 실행: %dx%d  창 위치 (%d, %d)" % (w, h, x, y))
     _log("작업표시줄 자동 숨김과 디스플레이 배율 100%% 를 확인할 것")
     import subprocess
     subprocess.Popen(args)

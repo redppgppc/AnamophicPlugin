@@ -91,6 +91,40 @@ def write(cfg, path):
     return path
 
 
+def work_area():
+    """주 모니터의 작업 영역 (작업표시줄 제외). -> (가로, 세로) 또는 None.
+
+    ponytail: 주 모니터만 본다. 다른 모니터에 띄우려면 win_x 를 직접 주면 된다.
+    """
+    try:
+        import ctypes
+        from ctypes import wintypes
+        r = wintypes.RECT()
+        SPI_GETWORKAREA = 0x0030
+        if not ctypes.windll.user32.SystemParametersInfoW(SPI_GETWORKAREA, 0, ctypes.byref(r), 0):
+            return None
+        return (r.right - r.left, r.bottom - r.top)
+    except Exception:
+        return None
+
+
+def fit_window(ww, wh, area=None):
+    """창을 작업 영역 한가운데에 넣는다. -> (가로, 세로, x, y, 배율)
+
+    벽 해상도가 모니터보다 크면 창이 잘린다. 좌우가 잘리면 착시가 맞는지 볼 수가 없다.
+    그래서 비율을 지켜 줄이고 가운데에 놓는다. 배율 1.0 이면 원본 그대로다.
+    작업 영역을 못 구하면 (0, 0) 에 원본 크기로 둔다. 지금까지의 동작이다.
+    """
+    if area is None:
+        area = work_area()
+    if not area or not ww or not wh:
+        return ww, wh, 0, 0, 1.0
+    sw, sh = area
+    k = min(1.0, float(sw) / ww, float(sh) / wh)
+    w, h = int(ww * k), int(wh * k)
+    return w, h, (sw - w) // 2, (sh - h) // 2, k
+
+
 def launch_args(ue_exe, uproject, map_path, cfg_path, ww, wh,
                 win_x=0, win_y=0, hide_screen_messages=True):
     """클러스터 실행 인자.
@@ -144,6 +178,13 @@ def demo():
             cfg["nDisplay"]["scene"]["screens"], "mesh_component 가 어떤 스크린도 안 가리킴"
     args = launch_args("ue.exe", "p.uproject", "/Game/M", "c.ndisplay", ww, wh)
     assert "ResX=%d" % ww in args and "ResY=%d" % wh in args
+
+    # 창 배치: 들어가면 가운데, 넘치면 비율을 지켜 줄이고 가운데
+    assert fit_window(800, 600, (1920, 1032)) == (800, 600, 560, 216, 1.0)
+    w, h, x, y, k = fit_window(2560, 698, (1920, 1032))
+    assert (w, h) == (1920, 523) and k == 0.75, (w, h, k)
+    assert x == 0 and y == (1032 - 523) // 2, (x, y)
+    assert abs(w / float(h) - 2560 / 698.0) < 0.01, "비율이 바뀌었다"
     print("config ok")
 
 

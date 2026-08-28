@@ -4,7 +4,7 @@
     "version": "5.00",
     "assetPath": "/Game/AnamorphicRig/NDC_probe_site_curved.NDC_probe_site_curved",
     "misc": {
-      "bFollowLocalPlayerCamera": false,
+      "bFollowLocalPlayerCamera": true,
       "bExitOnEsc": true,
       "bOverrideViewportsFromExternalConfig": true,
       "bOverrideTransformsFromExternalConfig": true

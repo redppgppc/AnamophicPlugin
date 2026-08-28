@@ -172,6 +172,11 @@ td code { white-space:nowrap; }
               있었으나 호출부가 안 넘겨 항상 꺼져 있었다. 기본값은 기존 동작 그대로
               (따라가기 끔 / ESC 종료 켬)</td></tr>
       <tr><td><span class="chip chip--done">완료</span></td>
+          <td>클러스터 창 중앙 배치 + 화면에 맞춰 축소 (2026-08-27)</td>
+          <td>벽 해상도가 모니터보다 크면 좌우가 잘려 착시를 볼 수 없었다.
+              <code>CF.fit_window()</code> 가 작업 영역에 맞춰 비율을 지켜 줄이고 가운데에 놓는다.
+              줄인 설정은 <code>*_preview.ndisplay</code> 에 따로 쓰고 원본은 그대로 둔다</td></tr>
+      <tr><td><span class="chip chip--done">완료</span></td>
           <td>02-guide.html 12절 <strong>실시간 인터랙션</strong> 신설 (2026-08-27)</td>
           <td>인풋을 어디에 꽂나, 개발 시 PIE 제약, 다중 노드 동기, 프로젝터 실시간의 남은 것.
               뒤 절은 13~15 로 밀림</td></tr>
