@@ -202,6 +202,26 @@ def monitors():
         return []
 
 
+def place_on_monitors(sizes, mons):
+    """노드 창 크기 목록 -> 모니터마다 하나씩 놓은 좌표. 못 놓으면 None.
+
+    규칙 하나로 모니터 개수와 무관하게 돈다: **노드 i 를 모니터 i 안에 가운데 정렬한다.**
+
+    가운데 정렬인 이유는 패널 화소 수가 모니터 해상도와 같으리라는 보장이 없어서다.
+    1280 짜리 패널을 2560 모니터에 왼쪽 붙여 놓으면 오른쪽이 통째로 빈다. 가운데면
+    어느 쪽이 남는지가 대칭이라 눈으로 판단하기 쉽다. 크기가 같으면 (0, 0) 과 같다.
+
+    순서는 둘 다 왼쪽부터다. 패널 순서와 모니터 배치 순서가 다른 현장은 여기서 못 맞춘다.
+    그건 도면이 주는 값이라 노드별 좌표를 직접 받아야 한다. 아직 그 UI 는 없다.
+    """
+    if not mons or len(mons) < len(sizes):
+        return None
+    out = []
+    for (w, h), (mx, my, mw, mh) in zip(sizes, mons):
+        out.append((mx + max(0, (mw - w) // 2), my + max(0, (mh - h) // 2)))
+    return out
+
+
 def screen_bounds():
     """창을 놓을 영역. -> (가로, 세로) 또는 None.
 
@@ -331,6 +351,15 @@ def demo():
     # 축소를 끄면 원본 크기 그대로, 화면 원점부터. 현장은 출력이 여러 개다
     assert fit_window(3840, 1440, (2560, 1440), shrink=False) == (3840, 1440, 0, 0, 1.0)
     assert isinstance(monitors(), list)      # 못 구해도 빈 목록이지 예외는 아니다
+
+    # 모니터 배치: 노드 i 를 모니터 i 안에 가운데. 개수와 무관하게 같은 규칙이다.
+    two = [(0, 0, 2560, 1440), (2560, 0, 2560, 1440)]
+    assert place_on_monitors([(1280, 1440), (2560, 1440)], two) == [(640, 0), (2560, 0)]
+    assert place_on_monitors([(2560, 1440), (2560, 1440)], two) == [(0, 0), (2560, 0)]
+    three = two + [(5120, 0, 1920, 1080)]
+    assert place_on_monitors([(1920, 1080)] * 3, three) == [(320, 180), (2880, 180), (5120, 0)]
+    assert place_on_monitors([(1, 1)] * 3, two) is None, "모니터가 모자라면 못 놓는다"
+    assert place_on_monitors([(1, 1)], []) is None
     print("config ok")
 
 
