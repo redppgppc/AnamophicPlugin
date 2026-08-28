@@ -22,7 +22,7 @@
   "follow_player": false,
   "exit_on_esc": true,
   "multi_node": true,
-  "fit_preview": false,
+  "fit_preview": true,
   "arc_seg": 24,
   "face_seg": 8,
   "seg_v": 4,
