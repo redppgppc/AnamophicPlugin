@@ -176,6 +176,32 @@ def work_area():
         return None
 
 
+def monitors():
+    """모니터 목록. -> [(x, y, 가로, 세로)] 왼쪽 위부터. 못 구하면 [].
+
+    노드 창을 모니터마다 하나씩 놓을 때 쓴다. 캔버스 좌표대로 이어 붙이면 화소 수가
+    모니터 크기와 안 맞아 창 하나가 두 모니터에 걸친다.
+    """
+    try:
+        import ctypes
+        from ctypes import wintypes
+        got = []
+        PROC = ctypes.WINFUNCTYPE(ctypes.c_int, ctypes.c_void_p, ctypes.c_void_p,
+                                  ctypes.POINTER(wintypes.RECT), ctypes.c_longlong)
+
+        def cb(hmon, hdc, lprc, data):
+            r = lprc.contents
+            got.append((int(r.left), int(r.top),
+                        int(r.right - r.left), int(r.bottom - r.top)))
+            return 1
+
+        if not ctypes.windll.user32.EnumDisplayMonitors(None, None, PROC(cb), 0):
+            return []
+        return sorted(got)
+    except Exception:
+        return []
+
+
 def screen_bounds():
     """창을 놓을 영역. -> (가로, 세로) 또는 None.
 
@@ -304,6 +330,7 @@ def demo():
     assert abs(w / float(h) - 2560 / 698.0) < 0.01, "비율이 바뀌었다"
     # 축소를 끄면 원본 크기 그대로, 화면 원점부터. 현장은 출력이 여러 개다
     assert fit_window(3840, 1440, (2560, 1440), shrink=False) == (3840, 1440, 0, 0, 1.0)
+    assert isinstance(monitors(), list)      # 못 구해도 빈 목록이지 예외는 아니다
     print("config ok")
 
 

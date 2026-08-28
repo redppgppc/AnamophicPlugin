@@ -373,14 +373,24 @@ def act_launch(s=None):
     # 노드마다 프로세스가 하나씩. 프라이머리(node_0)가 먼저 떠야 나머지가 붙는다.
     # x, y 는 캔버스를 화면 가운데에 놓는 오프셋이고, 노드 창은 캔버스 안의 제 자리에 놓인다.
     nodes = cfg["nDisplay"]["cluster"]["nodes"]
+    order = CF.node_order(nodes)
+    # 현장 배치(축소 끔)에서는 노드를 모니터에 하나씩 놓는다. 캔버스 좌표를 그대로 쓰면
+    # 패널 화소 수가 모니터 크기와 달라 창 하나가 두 모니터에 걸친다.
+    mons = [] if o["fit_preview"] else CF.monitors()
+    use_mon = len(order) > 1 and len(mons) >= len(order)
+    if len(order) > 1 and not o["fit_preview"] and not use_mon:
+        _log("모니터가 %d 대라 노드 %d 개를 하나씩 못 놓습니다. 캔버스 좌표로 이어 붙입니다"
+             % (len(mons), len(order)))
     import subprocess
-    for nname in CF.node_order(nodes):
+    for i, nname in enumerate(order):
         r = nodes[nname]["window"]
+        wx, wy = (mons[i][0], mons[i][1]) if use_mon else (x + r["x"], y + r["y"])
         args = CF.launch_args(exe, uproject, level, path, r["w"], r["h"],
-                              win_x=x + r["x"], win_y=y + r["y"], node=nname,
+                              win_x=wx, win_y=wy, node=nname,
                               hide_screen_messages=s.hide_screen_messages)
-        _log("%s 실행: %dx%d  창 위치 (%d, %d)  뷰포트 %s"
-             % (nname, r["w"], r["h"], x + r["x"], y + r["y"],
+        _log("%s 실행: %dx%d  창 위치 (%d, %d)%s  뷰포트 %s"
+             % (nname, r["w"], r["h"], wx, wy,
+                ("  모니터 %d" % (i + 1)) if use_mon else "",
                 ", ".join(sorted(nodes[nname]["viewports"]))))
         subprocess.Popen(args)
     area = CF.screen_bounds()

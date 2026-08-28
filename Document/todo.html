@@ -172,6 +172,11 @@ td code { white-space:nowrap; }
               있었으나 호출부가 안 넘겨 항상 꺼져 있었다. 기본값은 기존 동작 그대로
               (따라가기 끔 / ESC 종료 켬)</td></tr>
       <tr><td><span class="chip chip--done">완료</span></td>
+          <td>노드를 모니터에 하나씩 배치 (2026-08-27)</td>
+          <td>캔버스 좌표로 이어 붙이면 패널 화소 수와 모니터 크기가 달라 창 하나가 두 모니터에
+              걸쳤다. <code>monitors()</code> 로 모니터 원점을 읽어 노드 i 를 모니터 i 에 놓는다
+              (축소 끔일 때만)</td></tr>
+      <tr><td><span class="chip chip--done">완료</span></td>
           <td>창 배치를 가상 데스크톱 기준으로 + 축소 끄기 (2026-08-27)</td>
           <td>주 모니터 작업 영역만 재서, 모니터가 둘인데도 3840 캔버스를 66% 로 줄이고 있었다.
               <code>screen_bounds()</code> 가 가상 데스크톱을 쓰고,

@@ -1639,6 +1639,22 @@ md.set_vertex_instance_uv(inst, unreal.Vector2D(u / W, 1.0 - f), 0)
 끔   node_0  창 3840x1440   뷰포트 vp_L, vp_R    동기 none
 켬   node_0  창 1920x1440   뷰포트 vp_L         동기 ethernet
      node_1  창 1920x1440   뷰포트 vp_R</pre></div>
+  <div class="note note--tip">
+    <span class="note-label">창을 모니터에 하나씩</span>
+    <p>
+      <code>화면에 맞춰 축소</code> 를 <strong>끄면</strong> 노드를 모니터에 하나씩 놓는다.
+      node_0 은 첫 모니터 원점, node_1 은 두 번째 모니터 원점이다.
+    </p>
+    <p>
+      캔버스 좌표를 그대로 쓰면 안 된다. 패널 화소 수가 모니터 크기와 다르면
+      (예: 1280 패널 + 2560 패널을 2560 모니터 두 대에) <strong>창 하나가 두 모니터에
+      걸친다.</strong> 모니터가 노드보다 적으면 캔버스 좌표로 이어 붙이고 로그에 알린다.
+    </p>
+    <p>
+      <code>축소</code> 를 <strong>켜면</strong> 캔버스 배치 그대로 한 모니터에 줄여 놓는다.
+      전체를 한눈에 볼 때 쓴다.
+    </p>
+  </div>
   <p>
     창이 갈리면 <strong>뷰포트 좌표도 그 창의 원점 기준으로 다시 잡힌다.</strong>
     캔버스에서 <code>x=1920</code> 이던 오른쪽 패널이 자기 창에서는 <code>x=0</code> 이 된다.
