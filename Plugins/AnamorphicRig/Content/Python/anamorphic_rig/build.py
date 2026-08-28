@@ -20,7 +20,7 @@ def _actors():
     return unreal.get_editor_subsystem(unreal.EditorActorSubsystem)
 
 
-def build_warp_mesh(wall, asset_dir, mesh_name, arc_seg=24, face_seg=8, seg_v=4,
+def build_warp_mesh(wall, asset_dir, mesh_name, arc_seg, face_seg, seg_v,
                     flip_v=True, flip_winding=False):
     """전개 길이로 UV 를 매긴 워프 메시를 만든다. 리그 로컬 좌표 그대로 굽는다."""
     md = unreal.StaticMesh.create_static_mesh_description()

@@ -38,8 +38,8 @@ def suggest_spans(wall, projs, iters=4):
     lines = []
 
     for it in range(iters):
-        live = [PJ.Projector(p.name, spans[i][0], spans[i][1], back=p.back,
-                             pos=p.pos, dz=p.dz, res=p.res) for i, p in enumerate(ps)]
+        live = [PJ.Projector(p.name, spans[i][0], spans[i][1], p.back, p.res,
+                             pos=p.pos, dz=p.dz) for i, p in enumerate(ps)]
         moved = 0.0
         for i in range(len(ps) - 1):
             a, b = live[i], live[i + 1]
@@ -96,7 +96,7 @@ def _score(wall, projs, spans):
     교차점이 띠 밖으로 나가거나 띠가 평면을 벗어나면 큰 벌점. 안에 있으면 중심에서
     벗어난 정도만 센다.
     """
-    live = [PJ.Projector(p.name, a, b, back=p.back, pos=p.pos, dz=p.dz, res=p.res)
+    live = [PJ.Projector(p.name, a, b, p.back, p.res, pos=p.pos, dz=p.dz)
             for p, (a, b) in zip(sorted(projs, key=lambda q: q.u0), spans)]
     total = 0.0
     for i in range(len(live) - 1):
@@ -227,15 +227,14 @@ def demo():
     """자체 점검."""
     from . import geometry as G
     S = 0.1
-    w = G.BentWall(face_b=3653.65 * S, face_a=3653.65 * S, height=2100.0 * S,
-                   bend_deg=90.0, fillet_r=250.0 * S, convex=True,
-                   eye_dist=3500.0 * S, eye_height=160.0, base=0.0)
+    w = G.demo_wall(face_b=3653.65 * S, face_a=3653.65 * S, height=2100.0 * S,
+                    fillet_r=250.0 * S, eye_dist=3500.0 * S)
     W = w.developed()
     t1 = w.face_b
     t2 = t1 + w.arc_len()
-    projs = [PJ.Projector("L", 0, t1 - 30, back=300),
-             PJ.Projector("M", t1 - 60, t2 + 60, back=250, res=(2160, 3840)),
-             PJ.Projector("R", t2 + 30, W, back=300)]
+    projs = [PJ.Projector("L", 0, t1 - 30, 300, (3840, 2160)),
+             PJ.Projector("M", t1 - 60, t2 + 60, 250, (2160, 3840)),
+             PJ.Projector("R", t2 + 30, W, 300, (3840, 2160))]
 
     lo, hi = check_sum(w, projs)
     assert abs(lo - 1.0) < 1e-9 and abs(hi - 1.0) < 1e-9, (lo, hi)
@@ -253,9 +252,9 @@ def demo():
     assert abs(lo - 1.0) < 1e-9 and abs(hi - 1.0) < 1e-9, (lo, hi)
 
     # 이음매 산출이 겹침을 평면 안에 두는지
-    bad = [PJ.Projector("L", 0, t1 + 20, back=300),
-           PJ.Projector("M", t1 - 20, t2 + 20, back=250, res=(2160, 3840)),
-           PJ.Projector("R", t2 - 20, W, back=300)]
+    bad = [PJ.Projector("L", 0, t1 + 20, 300, (3840, 2160)),
+           PJ.Projector("M", t1 - 20, t2 + 20, 250, (2160, 3840)),
+           PJ.Projector("R", t2 - 20, W, 300, (3840, 2160))]
     spans, _ = suggest_spans(w, bad)
     for i in range(len(spans) - 1):
         lo_, hi_ = spans[i + 1][0], spans[i][1]

@@ -487,10 +487,9 @@ def to_projectors(s):
     for i, r in enumerate(s.projectors):
         out.append(PJ.Projector(
             r.name or "proj_%d" % i, r.span_start_m * M, r.span_end_m * M,
-            back=max(0.1, r.back_m) * M,
+            max(0.1, r.back_m) * M, (max(1, r.res_x), max(1, r.res_y)),
             pos=((r.free_x_m * M, r.free_y_m * M) if r.place_free else None),
-            dz=((r.height_m - s.eye_height_m) * M) if r.height_m else None,
-            res=(max(1, r.res_x), max(1, r.res_y))))
+            dz=((r.height_m - s.eye_height_m) * M) if r.height_m else None))
     return out
 
 

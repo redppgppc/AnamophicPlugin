@@ -29,7 +29,7 @@ class Projector(object):
     res      (가로, 세로) 화소
     """
 
-    def __init__(self, name, u0, u1, back=3000.0, pos=None, dz=None, res=(3840, 2160)):
+    def __init__(self, name, u0, u1, back, res, pos=None, dz=None):
         self.name = name
         self.u0, self.u1 = float(u0), float(u1)
         self.back, self.pos, self.dz = float(back), pos, dz
@@ -282,7 +282,7 @@ def _m(cm):
     return "%.2f m" % (cm / 100.0)
 
 
-def analyze(wall, projs, warn_grazing=20.0, warn_blend_pct=8.0):
+def analyze(wall, projs, warn_grazing, warn_blend_pct):
     """배치를 사람이 읽을 수 있는 줄로. -> (줄 목록, 경고 목록)."""
     lines, warns = [], []
     if not projs:
@@ -378,10 +378,13 @@ def analyze(wall, projs, warn_grazing=20.0, warn_blend_pct=8.0):
     return lines, warns
 
 
+RES = (3840, 2160)      # 테스트 데이터. 실제 값은 설정의 08 프로젝터에서 온다
+WARN = (20.0, 8.0)      # (입사각, 겹침 폭) 경고 기준. 설정 기본값과 같은 값
+
+
 def demo():
     """자체 점검. 언리얼 없이 python -c 로 돌린다."""
-    w = G.BentWall(face_b=3653.65, face_a=3653.65, height=2100.0, bend_deg=90.0,
-                   fillet_r=250.0, convex=True, eye_dist=3500.0, eye_height=160.0, base=0.0)
+    w = G.demo_wall()
     W = w.developed()
     t1, t2 = w.face_b, w.face_b + w.arc_len()
 
@@ -390,24 +393,24 @@ def demo():
     assert in_flat(w, 100.0, 2000.0) and not in_flat(w, t1 - 100.0, t2 + 100.0)
 
     # 필렛 전담: 이음매가 접점에 얹히고 겹침이 없다 -> 경고가 나와야 한다
-    bad = [Projector("L", 0, t1, back=3000), Projector("M", t1, t2, back=3000),
-           Projector("R", t2, W, back=3000)]
-    _, wb = analyze(w, bad)
+    bad = [Projector("L", 0, t1, 3000, RES), Projector("M", t1, t2, 3000, RES),
+           Projector("R", t2, W, 3000, RES)]
+    _, wb = analyze(w, bad, *WARN)
     assert any("겹치는 구간이 없다" in x for x in wb), wb
 
     # 가로지르기: 겹침이 평면 위에 있어야 한다
-    good = [Projector("L", 0, t1 - 600, back=3000),
-            Projector("M", t1 - 1200, t2 + 1200, back=3000),
-            Projector("R", t2 + 600, W, back=3000)]
-    lg, wg = analyze(w, good)
+    good = [Projector("L", 0, t1 - 600, 3000, RES),
+            Projector("M", t1 - 1200, t2 + 1200, 3000, RES),
+            Projector("R", t2 + 600, W, 3000, RES)]
+    lg, wg = analyze(w, good, *WARN)
     _, laps = coverage(w, good)
     assert len(laps) == 2, laps
     assert all(in_flat(w, lo, hi) for _, _, lo, hi in laps), "겹침이 평면 밖"
     assert not any("평면을 벗어난다" in x for x in wg), wg
 
     # 구멍 검출
-    hole = [Projector("L", 0, t1 - 600, back=3000), Projector("R", t2 + 600, W, back=3000)]
-    _, wh = analyze(w, hole)
+    hole = [Projector("L", 0, t1 - 600, 3000, RES), Projector("R", t2 + 600, W, 3000, RES)]
+    _, wh = analyze(w, hole, *WARN)
     assert any("덮이지 않는 구간" in x for x in wh), wh
 
     print("projector ok")

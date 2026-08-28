@@ -301,7 +301,7 @@ def launch_args(ue_exe, uproject, map_path, cfg_path, ww, wh,
 
 # --- 자체 점검 --------------------------------------------------------------
 def demo():
-    w = G.BentWall()
+    w = G.demo_wall()
     cfg, ww, wh = build(w, "/Game/X/Y.Y", 2560)
     n = cfg["nDisplay"]["cluster"]["nodes"]["node_0"]
     assert (ww, wh) == (2560, 698), (ww, wh)
@@ -371,7 +371,7 @@ def demo():
     assert isinstance(monitors(), list)      # 못 구해도 빈 목록이지 예외는 아니다
 
     # 화소는 언제나 짝수. 홀수면 MP4 인코더를 못 잡는다.
-    w2 = G.BentWall(face_b=365.0, face_a=365.0, height=210.0, bend_deg=90.0, fillet_r=25.0)
+    w2 = G.demo_wall(face_b=365.0, face_a=365.0, height=210.0, fillet_r=25.0)
     for rw in (987, 2560, 1):
         _, _, a2, b2 = screens_and_viewports(w2, rw)
         assert a2 % 2 == 0 and b2 % 2 == 0, (rw, a2, b2)

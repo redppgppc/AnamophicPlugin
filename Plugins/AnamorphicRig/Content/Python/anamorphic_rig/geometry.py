@@ -143,7 +143,7 @@ class PanelChain(object):
     free         {패널 인덱스: (x, y, yaw)} 떨어진 패널의 직접 좌표
     """
 
-    def __init__(self, panels, seams=None, eye_dist=6000.0, anchor_seam=1,
+    def __init__(self, panels, seams, eye_dist, anchor_seam=1,
                  rotate_deg=0.0, pitch_mm=None, free=None):
         self.panels = list(panels)
         self.seams = list(seams) if seams else [Seam() for _ in range(len(panels) - 1)]
@@ -349,9 +349,8 @@ class BentWall(object):
     base            바닥에서 벽 하단까지
     """
 
-    def __init__(self, face_b=3653.6504591506, face_a=3653.6504591506, height=2100.0,
-                 bend_deg=90.0, fillet_r=250.0, convex=True, eye_dist=3500.0,
-                 eye_offset_y=0.0, eye_height=160.0, base=0.0):
+    def __init__(self, face_b, face_a, height, bend_deg, fillet_r, eye_dist, eye_height,
+                 convex=True, eye_offset_y=0.0, base=0.0):
         self.face_b, self.face_a, self.height = float(face_b), float(face_a), float(height)
         self.bend_deg, self.fillet_r, self.convex = float(bend_deg), float(fillet_r), bool(convex)
         self.eye_dist, self.eye_offset_y = float(eye_dist), float(eye_offset_y)
@@ -444,6 +443,21 @@ class BentWall(object):
 
 
 # --- 자체 점검 --------------------------------------------------------------
+# --- 자체 점검 -------------------------------------------------------------
+# 아래 치수는 indoor_1_10 프리셋에서 가져온 **테스트 데이터**다. 야외 77 m 벽의 1/10 이고,
+# 각도가 축척에 안 변해서 같은 결론이 나온다. 클래스 기본값으로 두지 않는 이유는,
+# 설정을 안 넘겨도 그럴듯한 벽이 나오면 틀린 것을 못 알아채기 때문이다.
+DEMO_WALL = dict(face_b=3653.6504591506, face_a=3653.6504591506, height=2100.0,
+                 bend_deg=90.0, fillet_r=250.0, eye_dist=3500.0, eye_height=160.0)
+
+
+def demo_wall(**kw):
+    """예시 치수로 만든 BentWall. 바꾸고 싶은 것만 키워드로 준다."""
+    d = dict(DEMO_WALL)
+    d.update(kw)
+    return BentWall(**d)
+
+
 def demo():
     # 1) 볼록 90도 대칭 코너: 두 모델이 같은 평면도를 내야 한다.
     ch = PanelChain([Panel("L", 70.8, 39.8, 2560, 1440, dz=-4.6),
@@ -480,7 +494,7 @@ def demo():
 
     # 5) 꺾인 벽: 등호길이 매개변수화와 좌우 비대칭
     for fb, fa in ((3653.6504591506, 3653.6504591506), (2500.0, 4800.0), (5500.0, 1200.0)):
-        w = BentWall(face_b=fb, face_a=fa)
+        w = demo_wall(face_b=fb, face_a=fa)
         assert not w.check(), (fb, fa, w.check())
         us = w.column_us()
         poly = sum(math.dist(w.plan_point(us[i]), w.plan_point(us[i + 1]))
@@ -489,11 +503,11 @@ def demo():
             "표면 길이 %g != 전개 길이 %g" % (poly, w.developed())
         apex = w.plan_point(w.arc_mid_u())
         assert abs(apex[0] - w.eye_dist) < 1e-9 and abs(apex[1] + w.eye_offset_y) < 1e-9, apex
-    assert abs(BentWall().developed() - 7700.0) < 1e-6, BentWall().developed()
+    assert abs(demo_wall().developed() - 7700.0) < 1e-6, demo_wall().developed()
 
     # 6) 거부되어야 하는 형상
-    assert BentWall(face_b=100.0).check(), "필렛이 면보다 큰데 통과함"
-    assert BentWall(eye_offset_y=-3500.0).check(), "벽이 접히는데 통과함"
+    assert demo_wall(face_b=100.0).check(), "필렛이 면보다 큰데 통과함"
+    assert demo_wall(eye_offset_y=-3500.0).check(), "벽이 접히는데 통과함"
     bad = PanelChain([Panel("L", 70.8, 39.8, 100, 100), Panel("R", 70.8, 39.8, 100, 100)],
                      [Seam(90.0, convex=False)], eye_dist=30.0, anchor_seam=1)
     assert bad.check(), "패널이 눈 뒤에 있는데 통과함"
@@ -519,7 +533,7 @@ def demo():
     for w in (PanelChain([Panel('L', 2000, 1200, 1920, 1152),
                           Panel('R', 2000, 1200, 1920, 1152)],
                          [Seam(90.0)], eye_dist=3500.0, anchor_seam=1),
-              BentWall(), BentWall(face_b=2500, face_a=4800), BentWall(convex=False)):
+              demo_wall(), demo_wall(face_b=2500, face_a=4800), demo_wall(convex=False)):
         W = w.developed()
         for i in range(1, 8):
             u = i * W / 8.0

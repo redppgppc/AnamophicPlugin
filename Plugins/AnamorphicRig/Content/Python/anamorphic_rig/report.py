@@ -45,7 +45,7 @@ def video_warning(out_w, warn_video_w):
             % (out_w, warn_video_w))
 
 
-def content_spec(wall, res_w, warn_band=60.0):
+def content_spec(wall, res_w, warn_band):
     """영상 만드는 쪽에 그대로 넘길 숫자. -> (줄 목록, 경고 목록).
 
     아나모픽 변환은 **벽의 기하만** 되돌린다. 영상 안에 이미 찍혀 있는 원근은 못 고친다.
@@ -77,8 +77,7 @@ def _ratio_name(r):
     return "%s 에 가까움" % name if best < 0.06 else "%.2f : 1" % r
 
 
-def summarize(wall, res_w, warn_grazing=20.0, warn_band=60.0, warn_density=2.0,
-              warn_video_w=0):
+def summarize(wall, res_w, warn_grazing, warn_band, warn_density, warn_video_w):
     """-> (줄 목록, 경고 목록). 경고가 비어 있으면 형상이 쓸 만하다는 뜻."""
     lines, warns = [], []
     W = wall.developed()
@@ -146,7 +145,7 @@ def summarize(wall, res_w, warn_grazing=20.0, warn_band=60.0, warn_density=2.0,
     return lines, warns
 
 
-def band_warning(band, warn_band=60.0):
+def band_warning(band, warn_band):
     """--curved 변환의 안전 세로 밴드 경고. band 는 (위, 아래) 비율."""
     pct = (band[1] - band[0]) * 100.0
     msg = "안전 세로 밴드 원본 위에서 %.1f%% ~ %.1f%% (%.1f%% 만 사용 가능)" \

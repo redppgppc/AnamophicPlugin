@@ -172,6 +172,14 @@ td code { white-space:nowrap; }
               있었으나 호출부가 안 넘겨 항상 꺼져 있었다. 기본값은 기존 동작 그대로
               (따라가기 끔 / ESC 종료 켬)</td></tr>
       <tr><td><span class="chip chip--done">완료</span></td>
+          <td>현장 값 기본 인자 전부 제거 (2026-08-27)</td>
+          <td><code>BentWall</code> 기본 인자에 1/10 프리셋 현장이 박혀 있었다
+              (<code>face_b=3653.65</code> 등). <code>PanelChain.eye_dist</code>,
+              <code>Projector.back/res</code>, <code>build_warp_mesh</code> 분할 수,
+              경고 기준(<code>warn_grazing</code>·<code>warn_band</code>·
+              <code>warn_density</code>) 기본값도 함께 제거. 이제 값은 설정에서만 온다.
+              테스트 데이터는 <code>geometry.demo_wall()</code> 로 분리</td></tr>
+      <tr><td><span class="chip chip--done">완료</span></td>
           <td>영상 크기 하드코딩 제거 + 인코더 한계 경고 (2026-08-27)</td>
           <td><code>video.Plan(out_w=3840)</code> 기본값 제거. 벽 화소 수를 쓴다.
               <code>07 경고 기준 &gt; 영상 가로 경고</code> 신설 (기본 4096). 2.2 일부 해소</td></tr>
