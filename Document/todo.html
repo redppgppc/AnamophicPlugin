@@ -323,7 +323,31 @@ td code { white-space:nowrap; }
     <code>host 127.0.0.1</code>). 인터랙티브 콘텐츠를 멀티 노드로 돌릴 때 필요하다.
   </p>
 
-<h3>2.5 플러그인 배포 준비</h3>
+<h3>2.4b 곡면 벽의 출력 분할 (프로세서 입력이 여러 개일 때)</h3>
+  <p>
+    <code>BentWall</code> 은 뷰포트를 하나만 만든다 (<code>config.py:35</code>). 벽 전체가 워프 메시
+    컴포넌트 하나에 묶여 있어서 <code>make_nodes()</code> 가 쪼갤 단위가 없다. 프리셋에
+    <code>multi_node = True</code> 가 켜져 있어도 곡면에서는 아무 효과가 없다.
+  </p>
+  <p>
+    LED 프로세서가 <strong>패널별로 입력을 따로 받는 현장</strong>이면 워프 메시를 N개 컴포넌트로
+    나눠 구워야 한다. <code>column_us</code>(전개 길이 방향 열)를 N묶음으로 가르는 형태라 크지 않고,
+    뷰포트가 N개가 되면 <code>make_nodes</code>·<code>apply_regions</code>·창 배치는 기존 코드가
+    그대로 받는다.
+  </p>
+  <div class="note note--warn">
+    <span class="note-label">스펙 대기</span>
+    <p>분할선이 <strong>실제 패널 경계와 화소 단위로 일치해야</strong> 한다. 임의로 등분하면
+       이음매에 검은 줄이나 겹침이 생긴다. 패널별 가로 화소 수를 받기 전에는 만들지 않는다
+       (2026-08-31 결정).</p>
+  </div>
+  <p>
+    <strong>필요 없을 수도 있다.</strong> 프로세서가 큰 입력 하나를 받고 그래픽카드가
+    NVIDIA Mosaic 로 여러 출력을 한 데스크톱으로 묶어 주면 지금 구성 그대로 나간다.
+    평면 4장을 꺾어 붙인 형상이면 <code>PanelChain</code> 경로라 이미 된다.
+  </p>
+
+  <h3>2.5 플러그인 배포 준비</h3>
   <ul>
     <li><code>Resources/Icon128.png</code> 이 없다. 폴더가 비어 있어 플러그인 목록에 아이콘이 안 뜬다</li>
     <li><code>.uplugin</code> 의 <code>Description</code> 이 LED 벽만 언급한다. 프로젝터 기능이 빠졌다</li>
