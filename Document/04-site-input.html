@@ -1,0 +1,717 @@
+<!-- 현장 값 입력 폼. 채워서 나온 JSON 을 Config/AnamorphicRig/ 에 넣으면 프리셋이 된다. -->
+<meta charset="utf-8">
+<title>현장 값 입력</title>
+<style>
+/* 02-guide.html · todo.html 과 같은 토큰. 세 문서가 한 벌로 보이게 한다. */
+:root {
+  --ground:#f5f8f8; --surface:#ffffff; --inset:#eef2f2;
+  --hairline:#d3dcdc; --hairline-2:#e3eaea;
+  --ink:#111a1c; --ink-2:#435254; --ink-3:#6d7d7f;
+  --wall:#0c7a72; --wall-soft:#d6ebe9;
+  --normal:#9c5b16; --normal-soft:#f6e8d8;
+  --spot:#ab373b; --spot-soft:#f7e0e0;
+  --code-ink:#1d2a2c;
+  --sans:"IBM Plex Sans KR","Malgun Gothic",system-ui,sans-serif;
+  --mono:"IBM Plex Mono","Nanum Gothic Coding","D2Coding",Consolas,monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --ground:#0c1315; --surface:#121b1d; --inset:#0a1113;
+    --hairline:#263436; --hairline-2:#1b2628;
+    --ink:#dbe5e6; --ink-2:#9fb0b1; --ink-3:#748688;
+    --wall:#3ed9cc; --wall-soft:#10312f;
+    --normal:#e0a05c; --normal-soft:#2e2317;
+    --spot:#ef7175; --spot-soft:#331b1c;
+    --code-ink:#cbd8d9;
+  }
+}
+:root[data-theme="dark"] {
+  --ground:#0c1315; --surface:#121b1d; --inset:#0a1113;
+  --hairline:#263436; --hairline-2:#1b2628;
+  --ink:#dbe5e6; --ink-2:#9fb0b1; --ink-3:#748688;
+  --wall:#3ed9cc; --wall-soft:#10312f;
+  --normal:#e0a05c; --normal-soft:#2e2317;
+  --spot:#ef7175; --spot-soft:#331b1c;
+  --code-ink:#cbd8d9;
+}
+* { box-sizing:border-box; }
+body { margin:0; background:var(--ground); color:var(--ink);
+       font-family:var(--sans); font-size:1rem; line-height:1.7;
+       -webkit-font-smoothing:antialiased; }
+main { padding:3rem 1.5rem 6rem; max-width:92ch; margin:0 auto; }
+@media (min-width:780px) { main { padding:4rem 3rem 8rem; } }
+.eyebrow { font-family:var(--mono); font-size:0.72rem; font-weight:600;
+           letter-spacing:0.16em; text-transform:uppercase; color:var(--wall); margin:0 0 0.7rem; }
+h1 { font-size:2.3rem; font-weight:700; letter-spacing:-0.022em; line-height:1.14;
+     margin:0 0 0.9rem; text-wrap:balance; }
+.stamp { font-family:var(--mono); font-size:0.82rem; color:var(--ink-3);
+         border-top:1px solid var(--hairline); padding-top:0.85rem; margin:0 0 2.5rem; }
+.stamp b { color:var(--ink-2); font-weight:500; }
+section { margin-top:3rem; }
+h2 { font-size:1.5rem; font-weight:600; letter-spacing:-0.018em; line-height:1.25;
+     margin:0 0 1.1rem; padding-top:1rem; border-top:1px solid var(--hairline);
+     display:grid; grid-template-columns:2.3rem 1fr; gap:0.4rem; align-items:baseline; }
+h2 .n { font-family:var(--mono); font-size:1.1rem; font-weight:500; color:var(--wall); }
+h3 { font-size:1.05rem; font-weight:600; margin:1.9rem 0 0.5rem; }
+p { margin:0 0 0.9rem; text-wrap:pretty; }
+a { color:var(--wall); }
+ul, ol { margin:0 0 1rem; padding-left:1.3rem; }
+li { margin-bottom:0.42rem; }
+li::marker { color:var(--ink-3); }
+code { font-family:var(--mono); font-size:0.88em; background:var(--inset); color:var(--code-ink);
+       padding:0.1em 0.36em; border-radius:3px; border:1px solid var(--hairline-2); }
+.tablewrap { overflow-x:auto; margin:0 0 1.2rem; }
+table { border-collapse:collapse; width:100%; font-size:0.93rem; font-variant-numeric:tabular-nums; }
+th,td { text-align:left; vertical-align:top; padding:0.45rem 0.7rem 0.45rem 0;
+        border-bottom:1px solid var(--hairline-2); line-height:1.5;
+        word-break:keep-all; }   /* 한글이 낱말 도중에 끊기지 않게 */
+th { font-weight:600; font-size:0.76rem; letter-spacing:0.06em; text-transform:uppercase;
+     color:var(--ink-3); border-bottom:1px solid var(--hairline); white-space:nowrap; }
+tbody tr:last-child td { border-bottom:0; }
+.note { border-left:3px solid var(--wall); background:var(--wall-soft);
+        padding:0.85rem 1.1rem; margin:0 0 1.2rem; border-radius:0 4px 4px 0; }
+.note--warn { border-left-color:var(--spot); background:var(--spot-soft); }
+.note--tip  { border-left-color:var(--normal); background:var(--normal-soft); }
+.note p:last-child { margin-bottom:0; }
+.note-label { font-family:var(--mono); font-size:0.7rem; font-weight:600; letter-spacing:0.13em;
+              text-transform:uppercase; display:block; margin-bottom:0.28rem; color:var(--ink-2); }
+.chip { font-family:var(--mono); font-size:0.7rem; font-weight:600; letter-spacing:0.06em;
+        padding:0.1rem 0.45rem; border-radius:3px; white-space:nowrap; }
+.chip--must { background:var(--spot-soft); color:var(--spot); }
+.chip--nice { background:var(--normal-soft); color:var(--normal); }
+.chip--ours { background:var(--wall-soft); color:var(--wall); }
+/* 처음 나오는 자리에만 붙이는 용어 설명 */
+.g { color:var(--ink-3); font-weight:400; }
+.g::before { content:"뜻 "; font-family:var(--mono); font-size:0.72em; letter-spacing:0.1em;
+             color:var(--wall); }
+
+/* --- 폼 --------------------------------------------------------------- */
+fieldset { border:1px solid var(--hairline); border-radius:5px; background:var(--surface);
+           padding:1.1rem 1.3rem 1.3rem; margin:0 0 1.4rem; }
+legend { font-family:var(--mono); font-size:0.74rem; font-weight:600; letter-spacing:0.1em;
+         text-transform:uppercase; color:var(--wall); padding:0 0.4rem; }
+.grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(15rem,1fr)); gap:0.8rem 1.2rem; }
+label.f { display:block; font-size:0.86rem; color:var(--ink-2); }
+label.f > span { display:block; margin-bottom:0.2rem; }
+label.f .hint { color:var(--ink-3); font-size:0.78rem; font-weight:400; }
+input[type=text], input[type=number], select, textarea {
+  width:100%; font-family:var(--mono); font-size:0.9rem; color:var(--ink);
+  background:var(--inset); border:1px solid var(--hairline); border-radius:3px;
+  padding:0.35rem 0.5rem; }
+textarea { line-height:1.55; resize:vertical; }
+input:focus, select:focus, textarea:focus { outline:2px solid var(--wall); outline-offset:-1px; }
+label.c { display:flex; align-items:center; gap:0.45rem; font-size:0.86rem; color:var(--ink-2); }
+label.c input { width:auto; }
+button { font-family:var(--sans); font-size:0.85rem; font-weight:600; color:var(--surface);
+         background:var(--wall); border:0; border-radius:3px; padding:0.4rem 0.9rem;
+         cursor:pointer; }
+button.ghost { background:transparent; color:var(--wall); border:1px solid var(--hairline); }
+button:hover { filter:brightness(1.08); }
+table.rows input { padding:0.25rem 0.4rem; font-size:0.85rem; }
+table.rows th { font-size:0.7rem; }
+table.rows td { padding:0.3rem 0.4rem 0.3rem 0; }
+table.rows button { white-space:nowrap; padding:0.25rem 0.6rem; }
+.rowbar { margin-top:0.6rem; display:flex; gap:0.5rem; }
+#out { font-family:var(--mono); font-size:0.8rem; line-height:1.55; color:var(--code-ink);
+       background:var(--inset); border:1px solid var(--hairline-2); border-radius:4px;
+       padding:1rem 1.2rem; overflow-x:auto; max-height:32rem; overflow-y:auto;
+       white-space:pre; margin:0 0 0.8rem; }
+#derived { font-family:var(--mono); font-size:0.85rem; color:var(--ink-2); margin:0 0 0.9rem; }
+#warn:empty { display:none; }
+#warn li { color:var(--spot); }
+.hide { display:none !important; }
+@media (prefers-reduced-motion: reduce) { * { animation:none!important; transition:none!important; } }
+</style>
+
+<main>
+<p class="eyebrow">AnamorphicRig · 현장 인수</p>
+<h1>현장 값 입력</h1>
+<p class="stamp">최종 갱신 <b>2026-08-27</b> ·
+  근거 <a href="03-drawing-requirements.md">03-drawing-requirements.md</a> ·
+  사용법 <a href="02-guide.html">02-guide.html</a> ·
+  현황 <a href="todo.html">todo.html</a></p>
+
+<div class="note">
+  <span class="note-label">이 문서가 하는 일</span>
+  <p>지금 계산은 전부 <strong>예시 값</strong> 위에 서 있다. 실제 값이 들어와야 다시 돌릴 수
+     있는데, 그 값이 무엇무엇인지와 어떤 형식으로 받아야 하는지를 여기 한 장에 모았다.
+     아래 §3 폼을 채우면 <strong>플러그인이 바로 읽는 프리셋 JSON</strong> 이 나온다.
+     <span class="g">프리셋은 현장 하나의 설정값을 담은 파일이다. 현장 하나가 파일 하나.</span></p>
+  <p><strong>아나모픽</strong>
+     <span class="g">정해진 한 지점에서 볼 때만 형상이 바르게 보이도록 영상을 미리 비틀어 두는
+     방식. 벽이 꺾여 있어도 그 자리에서는 평평한 화면처럼 보인다. 그래서 관람 위치가 필수
+     입력이다.</span></p>
+</div>
+
+<section>
+  <h2><span class="n">0</span><span>쓰는 법</span></h2>
+  <ol>
+    <li>§1 을 읽고 <strong>누구에게 무엇을 물어야 하는지</strong> 확인한다.</li>
+    <li>§2 의 두 가지 결정(재생 방식 · 캘리브레이션 방식)을 먼저 받는다. 이것이 안 정해지면
+        나머지를 다 채워도 어디로 갈지가 안 정해진다.</li>
+    <li>§3 폼을 채우고 <strong>[JSON 내려받기]</strong> 를 누른다.</li>
+    <li>나온 파일을 <code>Config/AnamorphicRig/</code> 에 넣는다. 언리얼에서
+        <em>Tools &gt; Anamorphic Rig &gt; 프리셋 불러오기</em> 로 고르면 끝.</li>
+    <li>또는 파일을 그대로 나에게 주면 계산과 검토까지 돌려 준다.</li>
+  </ol>
+  <div class="note note--tip">
+    <span class="note-label">모르는 값이 있어도 됨</span>
+    <p>비워 두면 예시 기본값이 들어가고, JSON 의 <code>_notes.assumed</code> 에 가정값으로
+       기록된다. 나중에 무엇이 확정값이고 무엇이 가정인지 구분할 수 있다.</p>
+  </div>
+</section>
+
+<section>
+  <h2><span class="n">1</span><span>필요한 외부 입력 전체 목록</span></h2>
+  <p>누구에게 받아야 하는지로 묶었다. <span class="chip chip--must">필수</span> 가 없으면
+     계산 자체가 성립하지 않는다. <span class="chip chip--ours">우리가 정함</span> 은
+     물어볼 필요 없다.</p>
+
+  <h3>1.1 PM · 발주처 결정 (도면과 무관, 이것부터)</h3>
+  <div class="tablewrap"><table>
+    <thead><tr><th></th><th>항목</th><th>없으면 무슨 일이 생기나</th></tr></thead>
+    <tbody>
+      <tr><td><span class="chip chip--must">필수</span></td>
+          <td><strong>재생 방식</strong><br>언리얼 실시간 / 플레이어 재생<br>
+              <span class="g">언리얼 실시간은 현장 PC 가 엔진을 돌려 그 자리에서 화면을 만든다.
+              플레이어 재생은 미리 변환해 둔 영상 파일을 재생기에 넣는다.</span></td>
+          <td>7단계(워프 메시·PFM)를 만들지 6단계(영상 변환)로 끝낼지가 여기서 갈린다.
+              반대로 만들면 한 단계를 통째로 버린다<br>
+              <span class="g">워프 메시는 영상을 벽 모양에 맞춰 미리 휘어 주는 격자,
+              PFM 은 그 휨을 화소 단위 좌표표로 적어 둔 파일 형식이다. 둘 다 프로젝터·엔진이
+              읽어서 화면을 벽에 맞춘다.</span></td></tr>
+      <tr><td><span class="chip chip--must">필수</span></td>
+          <td><strong>캘리브레이션 방식</strong><br>카메라 측정(VIOSO 등) / CAD 계산<br>
+              <span class="g">캘리브레이션은 화면이 실제로 어디에 어떻게 맺히는지 재서 보정값을
+              만드는 일이다. 카메라로 벽을 찍어 재거나, 도면 수치로 계산해 낸다.</span></td>
+          <td>측정 기반이면 곡면이 부담이 아니고 7단계의 성격도 달라진다.
+              CAD 계산이면 도면 정확도가 곧 결과 정확도다</td></tr>
+      <tr><td><span class="chip chip--must">필수</span></td>
+          <td><strong>표시 장치</strong><br>LED 벽 / 프로젝터 / 둘 다</td>
+          <td>프로젝터가 없으면 §3 의 프로젝터 구간을 통째로 비운다</td></tr>
+      <tr><td><span class="chip chip--nice">있으면</span></td>
+          <td>콘텐츠 제작 주체와 일정</td>
+          <td>화각과 권장 렌더 크기를 넘겨야 할 상대. 늦게 알면 이미 잘못된 화각으로 렌더돼 있다<br>
+              <span class="g">화각은 카메라나 눈이 한 번에 담는 각도 범위다. 영상 쪽 화각과 벽의
+              화각이 다르면 변환이 잘라서 맞추고, 잘린 것보다 원근이 어긋난 것이 더 위험하다.</span></td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>1.2 도면 (평면도 · 입면도)</h3>
+  <p>상세 설명과 함정은 <a href="03-drawing-requirements.md">03-drawing-requirements.md</a> 에 있다.
+     여기는 목록만.</p>
+  <div class="tablewrap"><table>
+    <thead><tr><th></th><th>항목</th><th>필드</th><th>비고</th></tr></thead>
+    <tbody>
+      <tr><td><span class="chip chip--must">필수</span></td><td>왼쪽 면 전개 길이</td>
+          <td><code>face_b_m</code></td><td>라운드 구간을 뺀 직선부만. <strong>투영 길이 아님</strong><br>
+          <span class="g">전개 길이는 벽면을 따라 자로 잰 길이, 투영 길이는 위에서 내려다본
+          직선거리다. 꺾인 벽에서 둘은 다르고 전개 길이가 항상 더 길다. 도면 치수선은 보통
+          투영 길이다.</span></td></tr>
+      <tr><td><span class="chip chip--must">필수</span></td><td>오른쪽 면 전개 길이</td>
+          <td><code>face_a_m</code></td><td>좌우가 달라도 된다</td></tr>
+      <tr><td><span class="chip chip--must">필수</span></td><td>꺾임각</td>
+          <td><code>bend_deg</code></td><td>0 이면 일직선</td></tr>
+      <tr><td><span class="chip chip--must">필수</span></td><td>볼록 / 오목</td>
+          <td><code>convex</code></td><td>오목이면 수평 화각이 48° 에서 146° 로 폭증한다.
+              단일 뷰포트로 감당이 안 되고 프로젝터 배치가 통째로 달라진다<br>
+              <span class="g">뷰포트는 엔진이 한 번에 그려 내는 화면 하나다. 화각이 너무 넓으면
+              하나로는 못 그리고 여러 개로 쪼개야 한다.</span></td></tr>
+      <tr><td><span class="chip chip--must">필수</span></td><td>코너 라운드 R</td>
+          <td><code>fillet_r_m</code></td><td>실제 시공 R. 진짜 각진 코너면 다중 패널로 모델링한다</td></tr>
+      <tr><td><span class="chip chip--must">필수</span></td><td>화면 세로 크기</td>
+          <td><code>wall_height_m</code></td><td>발광부 기준<br>
+          <span class="g">발광부는 실제로 빛이 나오는 영역이다. LED 캐비닛의 테두리(베젤)는
+          뺀 값이라야 한다.</span></td></tr>
+      <tr><td><span class="chip chip--must">필수</span></td><td>관람 바닥에서 화면 하단</td>
+          <td><code>base_m</code></td><td>눈높이와 <strong>같은 기준면</strong>에서 잰 값.
+              벽 지대가 더 낮으면 음수가 정상</td></tr>
+      <tr><td><span class="chip chip--must">필수</span></td><td>두 지대의 표고 차</td>
+          <td>위에 반영</td><td>빠지면 벽이 통째로 위아래로 밀린 채 계산된다<br>
+          <span class="g">표고 차는 벽이 선 바닥과 관람자가 선 바닥의 높이 차다. 리그는 둘의
+          차이만 쓰므로 기준면이 무엇이든 상관없고, 같은 기준면에서 재기만 하면 된다.</span></td></tr>
+      <tr><td><span class="chip chip--nice">있으면</span></td><td>캐비닛 분할 도면</td>
+          <td>—</td><td>LED 프로세서가 패널별 입력이면 노드를 쪼개야 한다 (미구현, 스펙 대기)<br>
+          <span class="g">LED 프로세서는 영상 신호를 받아 LED 패널들에 나눠 보내는 장비다.
+          노드는 클러스터에서 화면 출력을 맡는 PC 한 대를 뜻한다. 프로세서가 입력을 여러 개로
+          받으면 출력도 그만큼 쪼개서 내보내야 한다.</span></td></tr>
+      <tr><td><span class="chip chip--nice">있으면</span></td><td>구조물 간섭 (기둥·조명·스피커)</td>
+          <td>—</td><td>프로젝터 시선을 가리는 것</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>1.3 관람 위치 — 도면에 점으로 찍혀 있어야 한다</h3>
+  <div class="tablewrap"><table>
+    <thead><tr><th></th><th>항목</th><th>필드</th><th>비고</th></tr></thead>
+    <tbody>
+      <tr><td><span class="chip chip--must">필수</span></td><td>기준점까지 정면 방향 거리</td>
+          <td><code>eye_dist_m</code></td><td><strong>직선거리가 아니다.</strong> 정면 축을 따라 잰 거리</td></tr>
+      <tr><td><span class="chip chip--must">필수</span></td><td>대칭축에서 좌우 치우침</td>
+          <td><code>eye_offset_m</code></td><td>+ 가 오른쪽. 축 위면 0</td></tr>
+      <tr><td><span class="chip chip--must">필수</span></td><td>바닥에서 눈까지</td>
+          <td><code>eye_height_m</code></td><td>서면 1.5~1.7, 앉으면 1.1~1.2</td></tr>
+      <tr><td><span class="chip chip--nice">있으면</span></td><td>관람 구역 범위</td>
+          <td>—</td><td>한 점 말고 범위. 착시가 어디까지 견디는지 판단에 쓴다</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>1.4 장비 사양</h3>
+  <div class="tablewrap"><table>
+    <thead><tr><th></th><th>항목</th><th>필드</th><th>비고</th></tr></thead>
+    <tbody>
+      <tr><td><span class="chip chip--must">LED 면</span></td><td>픽셀 피치</td>
+          <td><code>pitch_mm</code></td><td>이것만 있으면 크기에서 해상도를 유도한다<br>
+          <span class="g">픽셀 피치는 이웃한 화소의 중심 사이 간격이다. 작을수록 촘촘하다.
+          가로 크기를 피치로 나누면 가로 화소 수가 나온다.</span></td></tr>
+      <tr><td><span class="chip chip--must">LED 면</span></td><td>또는 패널별 실제 해상도</td>
+          <td><code>res_x</code>, <code>res_y</code></td><td>피치가 구간마다 다르면 이쪽을 직접</td></tr>
+      <tr><td><span class="chip chip--must">프로젝터면</span></td><td>대수와 해상도</td>
+          <td><code>res_x</code>, <code>res_y</code></td><td>세로로 돌려 달면 2160 x 3840 으로 넣는다</td></tr>
+      <tr><td><span class="chip chip--must">프로젝터면</span></td><td>렌즈 화각 범위</td>
+          <td><code>_notes</code></td><td>계산이 낸 필요 화각을 실제 렌즈가 낼 수 있는지 대조</td></tr>
+      <tr><td><span class="chip chip--must">프로젝터면</span></td><td>광량 (lm)</td>
+          <td><code>_notes</code></td><td><strong>대수의 하한을 밝기가 정한다.</strong>
+              기하만으로 대수를 정하면 어둡다<br>
+              <span class="g">lm 은 루멘, 프로젝터가 내는 빛의 총량이다. 한 대가 넓은 면을 맡을수록
+              같은 광량이 얇게 펴져 어두워진다.</span></td></tr>
+      <tr><td><span class="chip chip--nice">있으면</span></td><td>설치 가능 위치 제약</td>
+          <td><code>_notes</code></td><td>천장 구조, 렌즈 시프트 범위<br>
+          <span class="g">렌즈 시프트는 프로젝터 본체를 기울이지 않고 렌즈만 옮겨 상을 위아래·좌우로
+          미는 기능이다. 기울이면 화면이 사다리꼴로 찌그러지므로 시프트로 미는 편이 낫다.</span></td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>1.5 우리가 정하는 것 (물어볼 필요 없음)</h3>
+  <p><span class="chip chip--ours">우리가 정함</span>
+     정면에 둘 이음매(<code>anchor_seam</code>
+     <span class="g">이음매는 패널과 패널이 만나는 자리, 또는 꺾인 벽의 코너다</span>),
+     전체 회전(<code>rotate_deg</code>),
+     워프 메시 분할 수(<code>arc_seg</code> 등), 출력 해상도, 경고 기준값,
+     블렌드 커브 감마. 폼에서 비워 두면 기본값이 들어간다.</p>
+</section>
+
+<section>
+  <h2><span class="n">2</span><span>먼저 받아야 하는 두 결정</span></h2>
+  <div class="note note--warn">
+    <span class="note-label">여기가 갈림길</span>
+    <p><strong>언리얼 실시간</strong>이면 7단계(프로젝터별 워프 메시 / PFM)가 목적지이고
+       6단계 영상 변환은 프리뷰용으로만 남는다.<br>
+       <strong>플레이어 재생</strong>이면 그 반대다. 6단계로 끝이고 7단계는 만들 필요가 없다.
+       파이프라인은 이미 완료 상태다.</p>
+  </div>
+</section>
+
+<section>
+  <h2><span class="n">3</span><span>입력 폼</span></h2>
+
+  <form id="form">
+
+  <fieldset>
+    <legend>프리셋</legend>
+    <div class="grid">
+      <label class="f"><span>파일 이름 <span class="hint">현장 하나가 파일 하나</span></span>
+        <input type="text" id="preset_name" value="site_01"></label>
+      <label class="f"><span>현장 이름 / 메모</span>
+        <input type="text" id="site_label" placeholder="예: OO 전시관 로비"></label>
+    </div>
+  </fieldset>
+
+  <fieldset>
+    <legend>A. 현장 결정</legend>
+    <div class="grid">
+      <label class="f"><span>재생 방식</span>
+        <select id="playback">
+          <option value="undecided">미정 (PM 확인 필요)</option>
+          <option value="unreal_realtime">언리얼 실시간 (nDisplay)</option>
+          <option value="player_file">플레이어 재생 (영상 파일)</option>
+          <option value="both">둘 다</option>
+        </select></label>
+      <label class="f"><span>캘리브레이션 방식</span>
+        <select id="calibration">
+          <option value="undecided">미정</option>
+          <option value="camera">카메라 측정 (VIOSO 등)</option>
+          <option value="cad">CAD 계산</option>
+        </select></label>
+      <label class="f"><span>표시 장치</span>
+        <select id="device">
+          <option value="led">LED 벽</option>
+          <option value="projector">프로젝터</option>
+          <option value="both">둘 다</option>
+        </select></label>
+      <label class="f"><span>LED 프로세서 입력 <span class="hint">패널별 분할이면 노드를 쪼개야 한다</span></span>
+        <select id="processor">
+          <option value="unknown">미확인</option>
+          <option value="single">단일 입력</option>
+          <option value="per_panel">패널별 분할</option>
+        </select></label>
+    </div>
+  </fieldset>
+
+  <fieldset>
+    <legend>B. 벽 형상</legend>
+    <label class="c"><input type="checkbox" id="bent_wall" checked>
+      <span>꺾인 벽 (한 장 연속). 끄면 평평한 화면 여러 장을 이어 붙인 다중 패널</span></label>
+
+    <div id="bent_block" style="margin-top:1rem">
+      <div class="grid">
+        <label class="f"><span>왼쪽 면 길이 (m) <span class="hint">face_b_m</span></span>
+          <input type="number" step="any" id="face_b_m" placeholder="3.654"></label>
+        <label class="f"><span>오른쪽 면 길이 (m) <span class="hint">face_a_m</span></span>
+          <input type="number" step="any" id="face_a_m" placeholder="3.654"></label>
+        <label class="f"><span>벽 높이 (m) <span class="hint">wall_height_m</span></span>
+          <input type="number" step="any" id="wall_height_m" placeholder="2.1"></label>
+        <label class="f"><span>꺾임 (도) <span class="hint">bend_deg</span></span>
+          <input type="number" step="any" id="bend_deg" placeholder="90"></label>
+        <label class="f"><span>코너 라운드 R (m) <span class="hint">fillet_r_m</span></span>
+          <input type="number" step="any" id="fillet_r_m" placeholder="0.25"></label>
+        <label class="f"><span>관람 바닥에서 벽 하단 (m) <span class="hint">base_m · 음수 가능</span></span>
+          <input type="number" step="any" id="base_m" placeholder="0"></label>
+      </div>
+      <label class="c" style="margin-top:0.7rem"><input type="checkbox" id="convex" checked>
+        <span>볼록 (코너가 관람자 쪽으로 튀어나옴)</span></label>
+    </div>
+
+    <div id="panel_block" class="hide" style="margin-top:1rem">
+      <h3 style="margin-top:0">패널 <span class="hint" style="font-weight:400">관람자 기준 왼쪽부터</span></h3>
+      <div class="tablewrap"><table class="rows">
+        <thead><tr><th>이름</th><th>가로 m</th><th>세로 m</th><th>바닥→하단 m</th>
+          <th>피치자동</th><th>가로 px</th><th>세로 px</th><th></th></tr></thead>
+        <tbody id="panels"></tbody>
+      </table></div>
+      <div class="rowbar"><button type="button" class="ghost" id="add_panel">패널 추가</button></div>
+
+      <h3>이음매 <span class="hint" style="font-weight:400">패널보다 정확히 하나 적어야 한다</span></h3>
+      <div class="tablewrap"><table class="rows">
+        <thead><tr><th>꺾임 도</th><th>볼록</th><th>틈 m</th><th></th></tr></thead>
+        <tbody id="seams"></tbody>
+      </table></div>
+      <div class="rowbar"><button type="button" class="ghost" id="add_seam">이음매 추가</button></div>
+
+      <div class="grid" style="margin-top:1rem">
+        <label class="f"><span>정면에 둘 이음매 <span class="hint">anchor_seam · -1 이면 전체 중앙</span></span>
+          <input type="number" step="1" id="anchor_seam" value="1"></label>
+        <label class="f"><span>전체 회전 (도) <span class="hint">rotate_deg</span></span>
+          <input type="number" step="any" id="rotate_deg" value="0"></label>
+      </div>
+    </div>
+  </fieldset>
+
+  <fieldset>
+    <legend>C. 관람 위치</legend>
+    <div class="grid">
+      <label class="f"><span>관람 거리 (m) <span class="hint">eye_dist_m · 정면 축 거리, 직선거리 아님</span></span>
+        <input type="number" step="any" id="eye_dist_m" placeholder="3.5"></label>
+      <label class="f"><span>좌우 치우침 (m) <span class="hint">eye_offset_m · + 가 오른쪽</span></span>
+        <input type="number" step="any" id="eye_offset_m" placeholder="0"></label>
+      <label class="f"><span>눈높이 (m) <span class="hint">eye_height_m · 벽 높이와 같은 기준면</span></span>
+        <input type="number" step="any" id="eye_height_m" placeholder="1.6"></label>
+    </div>
+  </fieldset>
+
+  <fieldset>
+    <legend>D. LED 사양</legend>
+    <div class="grid">
+      <label class="f"><span>픽셀 피치 (mm) <span class="hint">pitch_mm</span></span>
+        <input type="number" step="any" id="pitch_mm" placeholder="7.8"></label>
+    </div>
+  </fieldset>
+
+  <fieldset>
+    <legend>E. 프로젝터 (없으면 비워 둔다)</legend>
+    <p style="margin:0 0 0.9rem"><span class="g">담당 구간은 <strong>전개 좌표</strong>로 적는다.
+      벽면을 왼쪽 끝(0)부터 따라 잰 거리다. 옆 대와 <strong>겹치도록</strong> 넉넉히 준다.
+      겹친 자리에서 두 대의 밝기를 서로 반대로 흐리게 해 이음매를 숨기는 것이
+      <strong>블렌딩</strong>이고, 겹침이 없으면 숨길 자리가 없다.</span></p>
+    <div class="tablewrap"><table class="rows">
+      <thead><tr><th>이름</th><th>담당 시작 m</th><th>담당 끝 m</th><th>벽에서 물러남 m</th>
+        <th>바닥에서 높이 m</th><th>가로 px</th><th>세로 px</th><th></th></tr></thead>
+      <tbody id="projectors"></tbody>
+    </table></div>
+    <div class="rowbar">
+      <button type="button" class="ghost" id="add_proj">프로젝터 추가</button>
+      <button type="button" class="ghost" id="auto_proj">3대로 자동 배치</button>
+    </div>
+    <div class="grid" style="margin-top:1rem">
+      <label class="f"><span>렌즈 화각 범위 <span class="hint">사양서 값 그대로</span></span>
+        <input type="text" id="lens_note" placeholder="예: 수평 35~55도, 시프트 V±60%"></label>
+      <label class="f"><span>광량 (lm) <span class="hint">대수의 하한을 밝기가 정한다</span></span>
+        <input type="text" id="lumen_note" placeholder="예: 7500 lm / 대"></label>
+    </div>
+  </fieldset>
+
+  <fieldset>
+    <legend>F. 자유 메모</legend>
+    <label class="f"><span>도면에서 애매했던 것, 구조물 간섭, 확인이 필요한 항목</span>
+      <textarea id="free_note" rows="4" placeholder="예: 도면 치수선이 투영 길이인지 전개 길이인지 불명. 좌측 3 m 지점에 기둥 있음"></textarea></label>
+  </fieldset>
+
+  </form>
+
+  <h3>산출</h3>
+  <p id="derived"></p>
+  <ul id="warn"></ul>
+  <div class="rowbar" style="margin-bottom:0.9rem">
+    <button type="button" id="dl">JSON 내려받기</button>
+    <button type="button" class="ghost" id="copy">클립보드로 복사</button>
+  </div>
+  <pre id="out"></pre>
+  <div class="note note--tip">
+    <span class="note-label">주의</span>
+    <p><code>_notes</code> 블록은 플러그인이 읽지 않고 무시한다. 에디터에서 <em>저장</em>을 누르면
+       그 블록이 사라지므로, <strong>여기서 받은 원본 파일은 따로 남겨 둘 것.</strong></p>
+  </div>
+</section>
+
+<script>
+"use strict";
+var $ = function (id) { return document.getElementById(id); };
+
+// 폼이 안 채운 값에 넣는 예시 기본값. 무엇이 가정인지 _notes.assumed 에 기록한다.
+var FALLBACK = {
+  face_b_m: 3.654, face_a_m: 3.654, wall_height_m: 2.1, bend_deg: 90.0,
+  fillet_r_m: 0.25, base_m: 0.0, eye_dist_m: 3.5, eye_offset_m: 0.0,
+  eye_height_m: 1.6, pitch_mm: 7.8
+};
+// 우리가 정하는 값. 도면에서 받을 것이 아니다. settings.py 의 기본값과 같다.
+var OURS = {
+  video_path: "", video_passthrough: true, exposure_bias: 0.0,
+  hide_screen_messages: true, show_floor: true,
+  arc_seg: 24, face_seg: 8, seg_v: 4, flip_v: true, flip_winding: false,
+  warn_grazing_deg: 20.0, warn_band_pct: 60.0, warn_density_ratio: 2.0,
+  warn_blend_pct: 8.0, blend_gamma: 1.0, bake_blend: false
+};
+
+var PANEL_COLS = [
+  {k: "name", t: "text", v: "screen_L"}, {k: "width_m", v: 3.85}, {k: "height_m", v: 2.1},
+  {k: "panel_base_m", v: 0}, {k: "auto_res", t: "check", v: false},
+  {k: "res_x", v: 1920}, {k: "res_y", v: 1047}
+];
+var SEAM_COLS = [{k: "turn_deg", v: 90}, {k: "convex", t: "check", v: true}, {k: "gap_m", v: 0}];
+var PROJ_COLS = [
+  {k: "name", t: "text", v: "L"}, {k: "span_start_m", v: 0}, {k: "span_end_m", v: 0},
+  {k: "back_m", v: 3.0}, {k: "height_m", v: 0}, {k: "res_x", v: 3840}, {k: "res_y", v: 2160}
+];
+
+function mkRow(tb, cols, vals) {
+  var tr = document.createElement("tr");
+  cols.forEach(function (c) {
+    var td = document.createElement("td"), el = document.createElement("input");
+    var v = (vals && vals[c.k] !== undefined) ? vals[c.k] : c.v;
+    if (c.t === "check") { el.type = "checkbox"; el.checked = !!v; }
+    else {
+      el.type = c.t || "number";
+      if (el.type === "number") { el.step = "any"; }
+      el.value = v;
+    }
+    el.dataset.k = c.k;
+    el.addEventListener("input", update);
+    el.addEventListener("change", update);
+    td.appendChild(el);
+    tr.appendChild(td);
+  });
+  var td = document.createElement("td"), b = document.createElement("button");
+  b.type = "button";
+  b.className = "ghost";
+  b.textContent = "삭제";
+  b.onclick = function () { tr.remove(); update(); };
+  td.appendChild(b);
+  tr.appendChild(td);
+  tb.appendChild(tr);
+  return tr;
+}
+
+function readRows(tb) {
+  return Array.prototype.map.call(tb.children, function (tr) {
+    var o = {};
+    Array.prototype.forEach.call(tr.querySelectorAll("input"), function (i) {
+      o[i.dataset.k] = (i.type === "checkbox") ? i.checked
+        : (i.type === "number" ? (parseFloat(i.value) || 0) : i.value);
+    });
+    return o;
+  });
+}
+
+// 비었으면 기본값을 쓰고 가정 목록에 이름을 남긴다.
+var assumed = [];
+function num(id) {
+  var raw = $(id).value.trim();
+  if (raw === "") { assumed.push(id); return FALLBACK[id]; }
+  return parseFloat(raw);
+}
+
+function developed(d) {
+  if (d.bent_wall) {
+    return d.face_b_m + d.face_a_m + d.fillet_r_m * d.bend_deg * Math.PI / 180.0;
+  }
+  var w = 0;
+  d.panels.forEach(function (p) { w += p.width_m; });
+  d.seams.forEach(function (s) { w += s.gap_m; });
+  return w;
+}
+
+function wallHeight(d) {
+  if (d.bent_wall) { return d.wall_height_m; }
+  return d.panels.length ? d.panels[0].height_m : 0;
+}
+
+function build() {
+  assumed = [];
+  var d = {
+    bent_wall: $("bent_wall").checked,
+    face_b_m: num("face_b_m"), face_a_m: num("face_a_m"),
+    wall_height_m: num("wall_height_m"), bend_deg: num("bend_deg"),
+    fillet_r_m: num("fillet_r_m"), convex: $("convex").checked, base_m: num("base_m"),
+    eye_dist_m: num("eye_dist_m"), eye_offset_m: num("eye_offset_m"),
+    eye_height_m: num("eye_height_m"),
+    anchor_seam: parseInt($("anchor_seam").value || "1", 10),
+    rotate_deg: parseFloat($("rotate_deg").value || "0"),
+    pitch_mm: num("pitch_mm")
+  };
+  Object.keys(OURS).forEach(function (k) { d[k] = OURS[k]; });
+  d.version = 2;
+  d.panels = readRows($("panels"));
+  d.seams = readRows($("seams"));
+  d.projectors = readRows($("projectors")).map(function (r) {
+    r.place_free = false;
+    r.free_x_m = 0;
+    r.free_y_m = 0;
+    return r;
+  });
+  d._notes = {
+    site_label: $("site_label").value,
+    playback: $("playback").value,
+    calibration: $("calibration").value,
+    device: $("device").value,
+    led_processor: $("processor").value,
+    projector_lens: $("lens_note").value,
+    projector_lumen: $("lumen_note").value,
+    free: $("free_note").value,
+    assumed: assumed.slice()
+  };
+  return d;
+}
+
+function check(d) {
+  var w = [], W = developed(d), i;
+  if (!d.bent_wall) {
+    if (d.panels.length < 1) { w.push("패널이 없다. 최소 한 장은 있어야 한다"); }
+    if (d.seams.length !== Math.max(0, d.panels.length - 1)) {
+      w.push("이음매 수가 맞지 않는다. 패널 " + d.panels.length + " 장이면 이음매는 "
+             + Math.max(0, d.panels.length - 1) + " 개여야 한다 (지금 " + d.seams.length + " 개)");
+    }
+    var h = d.panels.length ? d.panels[0].height_m : 0;
+    if (d.panels.some(function (p) { return Math.abs(p.height_m - h) > 1e-6; })) {
+      w.push("패널 세로가 제각각이다. 전개 영상이 직사각형이 아니게 되어 영상 변환을 할 수 없다");
+    }
+  } else {
+    if (d.wall_height_m <= 0) { w.push("벽 높이가 0 이다"); }
+    if (d.fillet_r_m === 0 && d.bend_deg > 0) {
+      w.push("코너 R 이 0 이다. 워프 메시에 퇴화 삼각형이 생긴다. 진짜 직각이면 "
+             + "다중 패널로 모델링하고, 사실상 직각이면 R = 0.01 정도를 넣는다");
+    }
+  }
+  if (!d.convex && d.bend_deg > 0) {
+    w.push("오목이다. 수평 화각이 폭증하므로 (예시 형상에서 48도 -> 146도) 단일 뷰포트로는 "
+           + "감당이 안 되고 프로젝터 배치가 통째로 달라진다. 도면을 한 번 더 확인할 것");
+  }
+  if (d.eye_dist_m <= 0) { w.push("관람 거리가 0 이다. 아나모픽 계산이 성립하지 않는다"); }
+  if (d.eye_height_m <= 0) { w.push("눈높이가 0 이다"); }
+
+  var ps = d.projectors.slice().sort(function (a, b) { return a.span_start_m - b.span_start_m; });
+  var reach = 0;
+  ps.forEach(function (p) {
+    if (p.span_end_m <= p.span_start_m) { w.push(p.name + " 의 담당 구간이 비었다"); }
+    if (p.span_start_m > reach + 0.001) {
+      w.push("덮이지 않는 구간: " + reach.toFixed(2) + " ~ " + p.span_start_m.toFixed(2) + " m");
+    }
+    reach = Math.max(reach, p.span_end_m);
+  });
+  if (ps.length && reach < W - 0.001) {
+    w.push("덮이지 않는 구간: " + reach.toFixed(2) + " ~ " + W.toFixed(2) + " m (벽 끝)");
+  }
+  for (i = 1; i < ps.length; i++) {
+    if (ps[i].span_start_m >= ps[i - 1].span_end_m - 0.001) {
+      w.push(ps[i - 1].name + " 와 " + ps[i].name + " 가 겹치지 않는다. "
+             + "블렌딩할 자리가 없어 이음매에서 밝기 차를 숨길 수 없다");
+    }
+  }
+  if (d._notes.playback === "undecided") {
+    w.push("재생 방식이 미정이다. 7단계로 갈지 6단계로 끝낼지가 정해지지 않는다");
+  }
+  if (d._notes.device !== "led" && !ps.length) {
+    w.push("표시 장치에 프로젝터가 들어 있는데 프로젝터가 한 대도 없다");
+  }
+  return w;
+}
+
+function update() {
+  var d = build(), W = developed(d), H = wallHeight(d), w = check(d);
+  $("derived").textContent =
+    "전개 총길이 " + W.toFixed(3) + " m   ·   벽 높이 " + H.toFixed(2) + " m"
+    + "   ·   비율 " + (W / Math.max(0.001, H)).toFixed(3) + " : 1"
+    + "   ·   프로젝터 " + d.projectors.length + " 대"
+    + (assumed.length ? "   ·   가정값 " + assumed.length + " 개" : "   ·   전부 확정값");
+  $("warn").innerHTML = "";
+  w.forEach(function (t) {
+    var li = document.createElement("li");
+    li.textContent = t;
+    $("warn").appendChild(li);
+  });
+  $("out").textContent = JSON.stringify(d, null, 2);
+}
+
+// 담당 구간을 셋으로 나눈다. 가운데 대가 코너를 가로지르고 양옆과 겹친다.
+// 겹침을 코너 밖 평면 위에 두려는 것이지, 이대로 쓰라는 값은 아니다.
+function autoProjectors() {
+  var d = build(), W = developed(d);
+  var arc = d.bent_wall ? d.fillet_r_m * d.bend_deg * Math.PI / 180.0 : 0;
+  var t1 = d.bent_wall ? d.face_b_m : W / 2;
+  var t2 = t1 + arc;
+  var lap = 0.3;
+  $("projectors").innerHTML = "";
+  mkRow($("projectors"), PROJ_COLS,
+        {name: "L", span_start_m: 0, span_end_m: +(t1 - lap).toFixed(3), back_m: 3.0});
+  mkRow($("projectors"), PROJ_COLS,
+        {name: "M", span_start_m: +(t1 - lap * 2).toFixed(3), span_end_m: +(t2 + lap * 2).toFixed(3),
+         back_m: 2.5, res_x: 2160, res_y: 3840});
+  mkRow($("projectors"), PROJ_COLS,
+        {name: "R", span_start_m: +(t2 + lap).toFixed(3), span_end_m: +W.toFixed(3), back_m: 3.0});
+  update();
+}
+
+$("bent_wall").addEventListener("change", function () {
+  var b = $("bent_wall").checked;
+  $("bent_block").classList.toggle("hide", !b);
+  $("panel_block").classList.toggle("hide", b);
+  if (!b && !$("panels").children.length) {
+    mkRow($("panels"), PANEL_COLS, {name: "screen_L"});
+    mkRow($("panels"), PANEL_COLS, {name: "screen_R"});
+    mkRow($("seams"), SEAM_COLS);
+  }
+  update();
+});
+$("add_panel").onclick = function () { mkRow($("panels"), PANEL_COLS); update(); };
+$("add_seam").onclick = function () { mkRow($("seams"), SEAM_COLS); update(); };
+$("add_proj").onclick = function () { mkRow($("projectors"), PROJ_COLS); update(); };
+$("auto_proj").onclick = autoProjectors;
+
+$("dl").onclick = function () {
+  var blob = new Blob([JSON.stringify(build(), null, 2)], {type: "application/json"});
+  var a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = ($("preset_name").value || "site") + ".json";
+  a.click();
+  URL.revokeObjectURL(a.href);
+};
+$("copy").onclick = function () {
+  navigator.clipboard.writeText(JSON.stringify(build(), null, 2)).then(function () {
+    $("copy").textContent = "복사됨";
+    setTimeout(function () { $("copy").textContent = "클립보드로 복사"; }, 1500);
+  });
+};
+
+$("form").addEventListener("input", update);
+$("form").addEventListener("change", update);
+update();
+</script>
+</main>

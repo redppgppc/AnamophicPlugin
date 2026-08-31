@@ -111,3 +111,9 @@ arpwall_*.pgm
 
 # 개인 설정 (Claude Code 세션별. 팀 공유 아님)
 .claude/
+
+# 패키징 산출물 (1.5 GB)
+Package/
+
+# 엔진이 PixelStreaming 플러그인용으로 만든 스크립트
+Samples/
