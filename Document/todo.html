@@ -345,9 +345,31 @@ td code { white-space:nowrap; }
     <code>ethernet</code> 배리어로 자동 전환된다. 소리는 프라이머리만 낸다.
   </p>
   <p>
-    남은 것: <strong>입력 동기</strong>(<code>inputSyncPolicy</code> 가 아직
-    <code>None</code>)와 <strong>여러 PC 로 나누기</strong>(지금은 전부
-    <code>host 127.0.0.1</code>). 인터랙티브 콘텐츠를 멀티 노드로 돌릴 때 필요하다.
+    <strong>입력 동기는 해소됐다 (2026-08-31).</strong> 노드가 둘 이상이면
+    <code>inputSyncPolicy</code> 를 <code>ReplicatePrimary</code> 로 쓴다. 프라이머리가 키 상태 맵을
+    매 프레임 직렬화해 나머지에 복제한다 (<code>DisplayClusterPlayerInput.cpp</code>).
+    노드마다 창이 따로 뜨면 OS 는 포커스가 있는 창에만 키를 주므로, 안 켜면 그 노드만 움직여
+    벽이 어긋난다.
+  </p>
+  <div class="note note--warn">
+    <span class="note-label">같이 고쳐야 했던 것</span>
+    <p><code>Config/DefaultInput.ini</code> 의 <code>DefaultPlayerInputClass</code> 가
+       <code>EnhancedPlayerInput</code> 이라 <strong>설정이 통째로 무시되고 있었다.</strong>
+       <code>inputSyncPolicy</code> 를 읽는 주체가 <code>UDisplayClusterPlayerInput</code> 인데
+       그 클래스가 아예 생성되지 않았다. <code>UEnhancedPlayerInput</code> 을 상속하므로
+       갈아끼워도 기능 손실은 없다.</p>
+    <p>붙었는지는 로그로 본다:
+       <code>LogDisplayClusterGame: Native input sync policy: ReplicatePrimary</code>.
+       이 줄이 없으면 클래스가 안 붙은 것이다.</p>
+  </div>
+  <p>
+    쓸 때 <strong>포커스는 <code>node_0</code> 창에 둬야 한다.</strong> 복제되는 것은 프라이머리의
+    입력이다. 그리고 복제되는 것은 입력이지 결과가 아니므로 <strong>게임플레이가 노드마다
+    결정적</strong>이어야 한다 (실행 인자의 <code>-fixedseed</code> 가 이 때문이다).
+    UMG/Slate 위젯 입력은 이 경로를 타지 않는다.
+  </p>
+  <p>
+    남은 것: <strong>여러 PC 로 나누기</strong> (지금은 전부 <code>host 127.0.0.1</code>).
   </p>
 
 <h3>2.4b 곡면 벽의 출력 분할 (프로세서 입력이 여러 개일 때)</h3>
