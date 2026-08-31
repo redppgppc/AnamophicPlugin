@@ -144,9 +144,15 @@ def build(wall, asset_path, res_w, win_x=0, win_y=0,
             "primaryNode": {"id": "node_0"},
             # 노드가 여럿이면 소프트웨어 배리어로 프레임을 맞춘다. 안 맞추면 창마다
             # 다른 프레임이 떠서 이음매에서 어긋난다. 현장 하드웨어가 되면 nvidia 로 바꾼다.
+            # 입력은 프라이머리 것만 쓴다. 노드마다 창이 따로 뜨면 OS 는 포커스가 있는
+            # 창에만 키를 준다. 그러면 그 노드만 움직이고 나머지는 제자리라 벽이 어긋난다.
+            # ReplicatePrimary 는 프라이머리의 키 상태 맵을 매 프레임 나머지에 복제한다
+            # (DisplayClusterPlayerInput.cpp). 포커스는 node_0 창에 둬야 한다.
             "sync": {"renderSyncPolicy": {
                          "type": "ethernet" if len(nodes) > 1 else "none", "parameters": {}},
-                     "inputSyncPolicy": {"type": "None", "parameters": {}}},
+                     "inputSyncPolicy": {
+                         "type": "ReplicatePrimary" if len(nodes) > 1 else "None",
+                         "parameters": {}}},
             "nodes": nodes},
     }}
     return cfg, ww, wh
@@ -353,7 +359,12 @@ def demo():
         r = list(n["viewports"].values())[0]["region"]
         assert (r["x"], r["y"]) == (0, 0), "창 원점 기준으로 다시 잡혀야 한다: %s" % r
     assert nodes["node_0"]["sound"] and not nodes["node_1"]["sound"], "소리는 프라이머리만"
-    assert cfg["nDisplay"]["cluster"]["sync"]["renderSyncPolicy"]["type"] == "ethernet"
+    sync = cfg["nDisplay"]["cluster"]["sync"]
+    assert sync["renderSyncPolicy"]["type"] == "ethernet"
+    assert sync["inputSyncPolicy"]["type"] == "ReplicatePrimary", sync
+    # 노드가 하나면 복제할 상대가 없다
+    one = build(w, "/Game/X/Y.Y", 2560)[0]["nDisplay"]["cluster"]["sync"]
+    assert one["inputSyncPolicy"]["type"] == "None", one
     assert "-dc_node=node_1" in launch_args("u", "p", "/M", "c", 1, 1, node="node_1")
 
     # 노드 수가 뷰포트 수 이상이면 안 쪼갠다 (지금까지의 동작)

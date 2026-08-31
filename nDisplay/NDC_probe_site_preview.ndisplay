@@ -75,7 +75,7 @@
           "parameters": {}
         },
         "inputSyncPolicy": {
-          "type": "None",
+          "type": "ReplicatePrimary",
           "parameters": {}
         }
       },
