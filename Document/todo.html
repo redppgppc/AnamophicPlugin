@@ -161,10 +161,30 @@ td code { white-space:nowrap; }
           <td>배포용 실행 파일. <code>RunUAT BuildCookRun</code> 으로 쿡·스테이징·아카이브까지
               한 번에 돌린다 (결과 <code>Package\Windows\Moniter_2.exe</code>). C++ 소스가 없는
               BP 전용 프로젝트라 엔진 재컴파일이 없다.
-              <code>Run_Packaged.ps1</code> 은 <code>.ndisplay</code> 의 노드를 전부 읽어
-              하나씩 띄운다 (프라이머리 먼저). 해상도와 창 좌표를 손으로 안 적으므로 다중 패널도
-              그대로 된다. 배치 파일로는 JSON 을 못 읽어 PowerShell 로 갔다.
+              <code>Run_Packaged.ps1</code> 은 <strong>맵과 설정을 인자 쌍으로</strong> 받는다
+              (<code>.\Run_Packaged.ps1 Main NDC_probe_site</code>). <code>.ndisplay</code> 의
+              노드를 전부 읽어 하나씩 띄운다 (프라이머리 먼저). 해상도와 창 좌표를 손으로 안 적으므로
+              다중 패널도 그대로 된다. 배치 파일로는 JSON 을 못 읽어 PowerShell 로 갔다.
               <code>-DryRun</code> 으로 명령만 확인할 수 있다</td></tr>
+      <tr><td><span class="chip chip--done">완료</span></td>
+          <td>맵과 클러스터 설정은 <strong>실행 인자로 짝지어 준다</strong> (2026-08-31)</td>
+          <td>맵 안에 어떤 <code>.ndisplay</code> 를 쓸지 넣어 두는 방식은 <strong>불가능하다.</strong>
+              nDisplay 는 <code>-dc_cfg</code> 를 엔진 초기화 때, <strong>맵보다 먼저</strong> 읽는다
+              (<code>DisplayClusterGameEngine.cpp:110</code>). 클러스터가 먼저 서고 맵이 나중에 열리므로
+              순서가 반대다. 게다가 <code>LoadConfig()</code> 가 <code>FPaths::FileExists()</code> 로
+              막고 있어 에셋 경로(<code>/Game/...</code>)도 못 받고 디스크 파일만 받는다
+              (<code>DisplayClusterConfigurationMgr.cpp:46</code>).
+              패키지 안에 자동으로 짝지어 넣는 방식(<code>cluster.ndisplay</code> +
+              <code>launch.txt</code>)도 만들었다가 걷어냈다. 명시가 낫다는 판단</td></tr>
+      <tr><td><span class="chip chip--todo">주의</span></td>
+          <td>설정과 맵의 쌍이 맞아야 한다</td>
+          <td><code>.ndisplay</code> 의 <code>assetPath</code> 가 가리키는 리그 액터가 그 맵 안에
+              있어야 한다. 프리셋만 바꾸고 레벨을 다시 안 지으면 어긋난다. 실제로
+              <code>_active.txt</code> 는 <code>probe_site</code> 인데 <code>Main.umap</code> 에는
+              <code>NDC_probe_site_curved</code> 만 있는 상태가 나왔다.
+              <code>Run_Packaged.ps1</code> 이 <code>리그:</code> 줄에 그 경로를 찍어 준다.
+              순서: 플러그인 <strong>벽 만들기</strong> → 에디터 닫기 →
+              <code>Package.bat</code> → <code>Run_Packaged.ps1</code></td></tr>
       <tr><td><span class="chip chip--todo">한계</span></td>
           <td><code>Run_Packaged.ps1</code> 은 창을 캔버스 좌표에 그대로 놓는다</td>
           <td>플러그인 실행에는 <code>place_on_monitors()</code> 가 있어 노드를 모니터에 하나씩
