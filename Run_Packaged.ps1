@@ -1,11 +1,16 @@
-﻿# 패키징된 빌드를 nDisplay 로 실행한다. 맵과 클러스터 설정을 쌍으로 준다.
+﻿# 패키징된 빌드를 nDisplay 로 실행한다.
 #
-#   .\Run_Packaged.ps1 Main NDC_probe_site
-#   .\Run_Packaged.ps1 Main NDC_probe_site_curved_preview
-#   .\Run_Packaged.ps1 Main NDC_probe_site -DryRun      띄우지 않고 명령만 확인
+#   .\Run_Packaged.ps1 NDC_probe_site
+#   .\Run_Packaged.ps1 NDC_probe_site_curved_preview
+#   .\Run_Packaged.ps1 NDC_probe_site -DryRun           띄우지 않고 명령만 확인
+#   .\Run_Packaged.ps1 NDC_probe_site Curved            맵이 Main 이 아닐 때만 둘째 인자
 #
-# 맵은 짧은 이름이면 /Game/VprodProject/Maps/ 를 앞에 붙인다. /Game/ 으로 시작하면 그대로.
 # 설정은 nDisplay\<이름>.ndisplay 를 찾는다. 경로를 통째로 줘도 된다.
+# 맵은 짧은 이름이면 /Game/VprodProject/Maps/ 를 앞에 붙인다. /Game/ 으로 시작하면 그대로.
+#
+# 설정이 필수인 이유: 같은 DCRA 를 여러 설정이 몬다. 현장 원본이냐 축소 미리보기냐,
+# 노드를 몇 개로 쪼개느냐가 전부 .ndisplay 에서 정해진다 (bOverrideViewportsFromExternalConfig).
+# 엔진도 -dc_cfg 없이는 클러스터 모드로 뜨지 않고 즉시 종료한다.
 #
 # 설정과 맵이 서로 맞아야 한다. .ndisplay 의 assetPath 가 가리키는 리그 액터가 그 맵 안에
 # 있어야 하고, 없으면 nDisplay 가 화면을 못 잡는다. 프리셋을 바꿨으면 플러그인에서
@@ -14,8 +19,8 @@
 # nDisplay 는 -dc_cfg 를 맵보다 먼저, 엔진 초기화 때 읽는다. 게다가 에셋 경로(/Game/...)가
 # 아니라 디스크 파일만 받는다. 그래서 맵이 설정을 지목할 수 없고 둘을 따로 준다.
 param(
-  [Parameter(Mandatory=$true, Position=0)] [string]$Map,
-  [Parameter(Mandatory=$true, Position=1)] [string]$Config,
+  [Parameter(Mandatory=$true, Position=0)] [string]$Config,
+  [Parameter(Position=1)] [string]$Map = "Main",
   [switch]$DryRun
 )
 $ErrorActionPreference = "Stop"
