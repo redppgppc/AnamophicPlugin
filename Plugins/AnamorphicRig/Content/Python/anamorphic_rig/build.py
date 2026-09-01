@@ -14,6 +14,7 @@ from . import config as CF
 from . import geometry as G
 
 LABEL = "AR_"       # 이 플러그인이 만든 액터의 라벨 접두사
+PROBE = LABEL + "probe_"    # 검증 방 슬래브
 
 
 def _actors():
@@ -130,6 +131,38 @@ def spawn_floor(dcra, wall, eye_height_cm):
     act.static_mesh_component.set_material(0, grid)
     unreal.log("바닥: %.1f x %.1f m" % (depth / 100.0, width / 100.0))
     return act
+
+
+def clear_probe_room():
+    """검증 방 슬래브를 지운다. -> 지운 개수."""
+    acts = _actors()
+    gone = [a for a in acts.get_all_level_actors()
+            if a.get_actor_label().startswith(PROBE)]
+    for a in gone:
+        acts.destroy_actor(a)
+    return len(gone)
+
+
+def spawn_probe_room(dcra, wall, depth_scale=1.0):
+    """벽 뒤에 격자 방을 판다. 착시가 맞는지 보는 용도지 납품물이 아니다.
+
+    라벨이 LABEL 로 시작하므로 다음 '벽 만들기' 때 저절로 지워진다.
+    """
+    cube = unreal.load_object(None, "/Engine/BasicShapes/Cube.Cube")
+    grid = unreal.load_object(None, "/Engine/EngineMaterials/WorldGridMaterial.WorldGridMaterial")
+    xf, rot = dcra.get_actor_transform(), dcra.get_actor_rotation()
+    slabs = G.probe_room(wall, depth_scale)
+    for name, c, s in slabs:
+        a = _actors().spawn_actor_from_object(
+            cube, xf.transform_location(unreal.Vector(*c)), rot)
+        a.set_actor_label(PROBE + name)
+        # BasicShapes/Cube 는 한 변이 100 cm 다.
+        a.set_actor_scale3d(unreal.Vector(s[0] / 100.0, s[1] / 100.0, s[2] / 100.0))
+        a.static_mesh_component.set_material(0, grid)
+    size = dict((n, s) for n, _, s in slabs)
+    unreal.log("검증 방: 깊이 %.1f m, 폭 %.1f m, 높이 %.1f m"
+               % (size["floor"][0] / 100.0, size["floor"][1] / 100.0, size["left"][2] / 100.0))
+    return slabs
 
 
 def spawn_media_plate(mesh, dcra, video_abs):

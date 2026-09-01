@@ -110,7 +110,7 @@ td code { white-space:nowrap; }
 <p class="eyebrow">Unreal Engine 5.8 · nDisplay</p>
 <h1>AnamorphicRig 작업 현황</h1>
 <p class="stamp">
-  최종 갱신 <b>2026-08-31</b><br>
+  최종 갱신 <b>2026-09-01</b><br>
   사용법·원리 <b>02-guide.html</b> · 도면 요구사항 <b>03-drawing-requirements.md</b> ·
   <b>현장 값 입력 폼 04-site-input.html</b> · 옛 스크립트 근거 <b>00-overview.md</b>
 </p>
@@ -122,7 +122,9 @@ td code { white-space:nowrap; }
         알파 블렌드, 프로젝터별 영상 변환 2경로. 프리셋 2개 (<code>indoor_1_10</code>,
         <code>indoor_corner90</code>)</dd>
     <dt>다음</dt>
-    <dd><span class="next">현장이 언리얼 실시간인지 플레이어 재생인지 확정</span> —
+    <dd><span class="next">검증 방으로 착시가 맞는지 먼저 확인</span>
+        (<code>벽 &gt; 검증 방 놓기</code> → <code>클러스터 실행</code>. 코너가 사라지면 통과).
+        그 다음 <span class="next">현장이 언리얼 실시간인지 플레이어 재생인지 확정</span> —
         그에 따라 7단계(워프 메시/PFM)로 갈지 6단계로 끝낼지 갈린다.
         그리고 실제 도면 치수로 재계산</dd>
   </dl>
@@ -156,6 +158,19 @@ td code { white-space:nowrap; }
           <td><code>/hooks</code> 를 한 번 열거나 재시작</td>
           <td><code>.claude/</code> 가 세션 시작 시점에 없어서 설정 감시자가 안 보고 있다.
               그때까지 자동 커밋이 발동하지 않는다</td></tr>
+      <tr><td><span class="chip chip--done">완료</span></td>
+          <td><strong>검증 방</strong> 신설 — <code>벽 &gt; 검증 방 놓기 / 지우기</code> (2026-09-01)</td>
+          <td>착시가 실제로 맞는지 <strong>한 번도 검증된 적이 없었다.</strong> 벽 뒤에
+              격자(<code>WorldGridMaterial</code>) 방을 판다. 스크린 컴포넌트는
+              <code>SetHiddenInGame(true)</code> 라 실행하면 이 방만 그려진다.
+              착시가 맞으면 코너가 사라지고 벽 뒤에 직육면체 방이 뚫린 것처럼 보이고,
+              어긋나면 격자가 코너 선에서 꺾여 그 자리에서 티가 난다.
+              방 크기는 눈에서 벽 테두리로 나가는 광선을 안쪽 끝까지 늘려 잡는다
+              (작으면 벽 가장자리 화소가 허공을 비춰 검게 뜬다).
+              <code>geometry.probe_room()</code> 이 순수 계산이고
+              <code>demo()</code> 가 네 형상으로 광선 포함 여부를 검사한다.
+              라벨이 <code>AR_probe_</code> 라 다음 <strong>벽 만들기</strong> 때 저절로 지워진다.
+              <code>probe_site_curved</code> 기준 <strong>깊이 21 m · 폭 50.2 m · 높이 39 m</strong></td></tr>
       <tr><td><span class="chip chip--done">완료</span></td>
           <td><code>Package.bat</code> / <code>Run_Packaged.ps1</code> 신설 (2026-08-31)</td>
           <td>배포용 실행 파일. <code>RunUAT BuildCookRun</code> 으로 쿡·스테이징·아카이브까지

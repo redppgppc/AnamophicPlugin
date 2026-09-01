@@ -365,6 +365,21 @@ def act_build(s=None):
         _dialog("벽 만들기", "빌드는 끝났습니다." + chr(10) * 2 + "! " + w)
 
 
+def act_probe(s=None):
+    """벽 뒤에 격자 방을 놓거나 지운다 (토글). 착시 검증용."""
+    n = B.clear_probe_room()
+    if n:
+        _log("검증 방 지움 (%d)" % n)
+        return
+    s = current_settings() if s is None else s      # 설정 대화상자가 편집 중인 값을 넘긴다
+    dcra = next((a for a in B._actors().get_all_level_actors()
+                 if isinstance(a, unreal.DisplayClusterRootActor)), None)
+    if dcra is None:
+        raise RuntimeError("DCRA 가 없습니다. 먼저 '벽 만들기' 를 실행할 것")
+    B.spawn_probe_room(dcra, S.to_wall(s))
+    _log("검증 방 놓음. 클러스터 실행으로 코너가 사라지는지 볼 것")
+
+
 def act_launch(s=None):
     s = current_settings() if s is None else s      # 설정 대화상자가 편집 중인 값을 넘긴다
     wall = S.to_wall(s)
@@ -654,6 +669,8 @@ GROUPS = [
         ("Check", "형상 점검", "치수·화각·입사각과 경고를 출력 로그에 찍는다", act_check),
         ("Plan", "평면도 보기 / 지우기", "에디터 뷰포트에 평면도를 그린다. 다시 누르면 지운다", act_preview),
         ("Build", "벽 만들기", "워프 메시와 리그를 현재 레벨에 만든다", act_build),
+        ("Probe", "검증 방 놓기 / 지우기",
+         "벽 뒤에 격자 방을 판다. 착시가 맞으면 코너가 사라진다. 다시 누르면 지운다", act_probe),
         ("Launch", "클러스터 실행", "nDisplay 창을 별도 프로세스로 띄운다", act_launch),
         ("Proj", "프로젝터 배치 점검", "담당 구간·화각·입사각·겹침·밀도 교차점을 낸다", act_projectors),
         ("Blend", "블렌드 맵 만들기", "프로젝터별 알파 맵을 nDisplay/blend 에 쓴다", act_blend),

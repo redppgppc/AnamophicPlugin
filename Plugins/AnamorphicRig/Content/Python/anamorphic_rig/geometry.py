@@ -49,6 +49,43 @@ def span_deg(wall, samples=256):
     return min(a), max(a)
 
 
+def probe_room(wall, depth_scale=1.0):
+    """벽 뒤에 팔 격자 방의 슬래브 목록. -> [(이름, 중심(x,y,z), 크기(x,y,z))]
+
+    착시 검증용이다. 실행하면 스크린 컴포넌트는 게임에서 안 보이므로 그려지는 것은
+    이 방뿐이다. 착시가 맞으면 코너가 사라지고 벽 뒤에 직육면체 방이 뚫린 것처럼
+    보인다. 어긋나면 격자가 코너 선에서 꺾여 그 자리에서 티가 난다.
+
+    방은 눈에서 벽 테두리로 나가는 광선을 안쪽 끝까지 늘린 만큼 키운다. 작게 잡으면
+    벽 가장자리 화소가 방 밖의 허공을 비춰 검게 뜬다.
+    좌표는 전부 리그 로컬 (눈이 원점, 벽이 +X 쪽) 이고 단위는 cm.
+    """
+    W = wall.developed()
+    pts = [wall.plan_point(i * W / 128.0) for i in range(129)]
+    near = min(p[0] for p in pts)
+    if near <= 0.0:
+        raise ValueError("벽이 눈보다 뒤에 있다 (x=%.1f cm)" % near)
+    z0 = wall.base_z()
+    z1 = z0 + wall.height
+    back = near + wall.height * depth_scale
+    k = back / near      # 가장 가까운 벽 점의 배율이 제일 크다
+
+    # 0 을 같이 넣어 방이 시선축을 항상 품게 한다. 광선은 눈에서 나가므로 안쪽 끝점만
+    # 담으면 중간 구간은 저절로 들어온다.
+    ylo = min([0.0] + [y * back / x for x, y in pts])
+    yhi = max([0.0] + [y * back / x for x, y in pts])
+    zlo, zhi = min(0.0, z0 * k), max(0.0, z1 * k)
+
+    T = 20.0                                    # 슬래브 두께
+    cx, cy, cz = (near + back) / 2.0, (ylo + yhi) / 2.0, (zlo + zhi) / 2.0
+    d, w, h = back - near, yhi - ylo, zhi - zlo
+    return [("back",    (back, cy, cz), (T, w, h)),
+            ("floor",   (cx, cy, zlo),  (d, w, T)),
+            ("ceiling", (cx, cy, zhi),  (d, w, T)),
+            ("left",    (cx, ylo, cz),  (d, T, h)),
+            ("right",   (cx, yhi, cz),  (d, T, h))]
+
+
 # ===========================================================================
 # 패널 N 장
 # ===========================================================================
@@ -540,6 +577,21 @@ def demo():
             (x, y), (nx, ny) = w.plan_point(u), w.plan_normal(u)
             assert x * nx + y * ny > 0, \
                 '%s u=%.0f: 법선이 관람자를 향한다 (등져야 함)' % (type(w).__name__, u)
+
+    # 검증 방은 벽 테두리로 나가는 광선을 전부 담아야 한다. 좁으면 가장자리가 검게 뜬다.
+    for w in (demo_wall(), demo_wall(convex=False), demo_wall(face_b=2500, face_a=4800),
+              PanelChain([Panel('L', 2000, 1200, 1920, 1152),
+                          Panel('R', 2000, 1200, 1920, 1152)],
+                         [Seam(90.0)], eye_dist=3500.0, anchor_seam=1)):
+        c = dict((n, ctr) for n, ctr, _ in probe_room(w))
+        bx, ylo, yhi = c["back"][0], c["left"][1], c["right"][1]
+        zlo, zhi = c["floor"][2], c["ceiling"][2]
+        W, z0 = w.developed(), w.base_z()
+        for i in range(65):
+            x, y = w.plan_point(i * W / 64.0)
+            assert ylo - 1e-6 <= y * bx / x <= yhi + 1e-6, (type(w).__name__, i, y * bx / x)
+            for z in (z0, z0 + w.height):
+                assert zlo - 1e-6 <= z * bx / x <= zhi + 1e-6, (type(w).__name__, i, z * bx / x)
 
     print("geometry ok")
 
