@@ -110,7 +110,7 @@ td code { white-space:nowrap; }
 <p class="eyebrow">Unreal Engine 5.8 · nDisplay</p>
 <h1>AnamorphicRig 작업 현황</h1>
 <p class="stamp">
-  최종 갱신 <b>2026-09-01</b><br>
+  최종 갱신 <b>2026-09-02</b><br>
   사용법·원리 <b>02-guide.html</b> · 도면 요구사항 <b>03-drawing-requirements.md</b> ·
   <b>현장 값 입력 폼 04-site-input.html</b> · 옛 스크립트 근거 <b>00-overview.md</b>
 </p>
@@ -158,6 +158,12 @@ td code { white-space:nowrap; }
           <td><code>/hooks</code> 를 한 번 열거나 재시작</td>
           <td><code>.claude/</code> 가 세션 시작 시점에 없어서 설정 감시자가 안 보고 있다.
               그때까지 자동 커밋이 발동하지 않는다</td></tr>
+      <tr><td><span class="chip chip--done">완료</span></td>
+          <td><code>probe_site_curved_low</code> 프리셋 신설 (2026-09-02)</td>
+          <td><code>probe_site_curved</code> 와 <strong><code>base_m</code> 하나만</strong> 다르다 (5.0 → 1.0).
+              에셋 이름이 프리셋 이름에서 나오므로(<code>menu._opts</code>) 원본과 안 겹친다.
+              <code>프리셋 불러오기</code> → <code>벽 만들기</code> 로 나란히 비교한다.
+              <code>_active.txt</code> 는 안 건드렸다. 실제 도면 값이 오면 지운다</td></tr>
       <tr><td><span class="chip chip--done">완료</span></td>
           <td><strong>검증 방</strong> 신설 — <code>벽 &gt; 검증 방 놓기 / 지우기</code> (2026-09-01)</td>
           <td>착시가 실제로 맞는지 <strong>한 번도 검증된 적이 없었다.</strong> 벽 뒤에
@@ -448,6 +454,16 @@ td code { white-space:nowrap; }
     <tbody>
       <tr><td>전개 길이, 높이, 꺾임각, 라운드 R</td><td>지금 값은 협의 기준값이지 도면 확정값이 아니다</td></tr>
       <tr><td><strong>볼록 / 오목</strong></td><td>오목이면 수평 화각이 48° → <strong>146°</strong> 로 폭증한다 (확인함). 단일 뷰포트로는 감당이 안 되고 프로젝터 배치도 통째로 달라진다</td></tr>
+      <tr><td><strong>벽 하단이 지면에서 몇 m 인가 (<code>base_m</code>)</strong></td>
+          <td><strong>이 한 숫자가 가능한 구도를 통째로 정한다</strong> (2026-09-02 확인).
+              벽이 눈에서 덮는 <strong>앙각</strong>이 여기서 나온다. 지금 값 5.0 m 면
+              <code>+2.9° ~ +34.9°</code> 라 <strong>수평선(0°)이 화면에 없다.</strong>
+              즉 지면이 보이는 구도(물체 전체를 바닥과 함께 담는 그림)가 원리적으로 불가능하고,
+              콘텐츠를 <strong>벽 뒤 공중에 뜬 디오라마</strong>로 다시 구성해야 한다.
+              1.0 m 면 <code>-1.0° ~ +30.2°</code> 라 수평선이 들어온다.
+              비교용 프리셋 <code>probe_site_curved_low</code> 를 만들어 뒀다.
+              <br>이 값은 "전개 길이, 높이, 꺾임각" 항목에 묻혀 있었는데 그 셋과 무게가 다르다.
+              따로 물어야 한다</td></tr>
       <tr><td>관람 거리와 눈높이</td><td><code>눈높이 1.6 m</code> 는 일반값</td></tr>
       <tr><td>두 지대의 표고 차</td><td>벽이 선 지대와 관람 지대가 다르면 반드시 필요</td></tr>
       <tr><td>프로젝터 사양</td><td>해상도, 렌즈 화각 범위, 광량(lm). <strong>대수의 하한을 밝기가 정한다</strong></td></tr>
