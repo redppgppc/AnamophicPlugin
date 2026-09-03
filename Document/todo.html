@@ -217,10 +217,23 @@ td code { white-space:nowrap; }
               알려 준다 — 저장해야 고쳐진다는 뜻이다.
               <br>이 씬은 물결이 <strong>모프 타깃 애니메이션</strong>이라 물 메시만 걸렸다.
               등대·배는 스키닝만 써서 멀쩡했다. 그 차이가 "물만 회색"으로 보인 이유다.
+              <br><strong>플래그는 인스턴스가 아니라 부모 <code>UMaterial</code> 에 있다.</strong>
+              임포트된 것은 대부분 <code>MaterialInstanceConstant</code> 라
+              거기에 값을 넣으면 <code>Failed to find property</code> 가 난다.
+              <code>get_base_material()</code> 로 올라가야 한다.
+              <br><strong>&#39;모두 저장&#39; 으로는 안 고쳐진다.</strong> 로드 중에는
+              <code>MarkPackageDirty()</code> 가 실패해서 (<code>Material.cpp:1918</code>)
+              저장 표시가 안 붙고 그냥 건너뛴다. 값을 직접 다시 넣어야 dirty 가 잡힌다.
+              (엔진이 대신 <strong>맵 체크에 Fix 링크</strong>를 달아 두긴 한다)
+              <br><strong>도구:</strong> <code>Fix_MaterialUsage.py</code> 신설 (프로젝트 루트).
+              최신 로그를 읽어 경고 난 머티리얼만 골라 부모까지 올라가 고치고 저장한다.
+              에디터 Output Log 의 Cmd 를 Python 으로 두고 한 줄:
+              <code>exec(open(r&quot;D:\Temp\Moniter_2\Fix_MaterialUsage.py&quot;, encoding=&quot;utf-8&quot;).read())</code>
+              (콘솔은 문 하나만 받아서 여러 줄 붙여넣기가 안 된다)
               <br><strong>교훈: 에디터에서 되고 클러스터에서만 이상하면 로그부터 볼 것.</strong>
-              <code>Saved/Logs/Moniter_2*.log</code> 에서
-              <code>missing usage flag</code> 로 찾으면 된다. Fab·Sketchfab glTF 를 임포트할 때마다
-              반복될 문제다</td></tr>
+              <code>missing usage flag</code> 로 찾으면 된다.
+              Fab·Sketchfab glTF 를 임포트할 때마다 반복될 문제다.
+              <strong>확인 완료 (2026-09-03 11:48 로그, 경고 0건)</strong></td></tr>
       <tr><td><span class="chip chip--done">해결</span></td>
           <td><code>mr_crabys_lighthouse</code> 의 물이 회색으로 나오던 건 (2026-09-03)</td>
           <td>물은 메시 하나다. 머티리얼 6개가 <strong>전부 <code>VertexColor</code> 노드</strong>를 쓰고,
