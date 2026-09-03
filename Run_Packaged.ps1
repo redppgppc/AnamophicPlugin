@@ -6,7 +6,9 @@
 #   .\Run_Packaged.ps1 NDC_probe_site Curved            맵이 Main 이 아닐 때만 둘째 인자
 #
 # 설정은 nDisplay\<이름>.ndisplay 를 찾는다. 경로를 통째로 줘도 된다.
-# 맵은 짧은 이름이면 /Game/VprodProject/Maps/ 를 앞에 붙인다. /Game/ 으로 시작하면 그대로.
+# 맵은 짧은 이름이면 /Game/Maps/ 를 앞에 붙인다. /Game/ 으로 시작하면 그대로.
+# 2026-09-03 에 맵이 /Game/VprodProject/Maps/ 에서 옮겨졌다. 옛 자리에 남은 리다이렉터는
+# 쿡에 안 들어가므로 패키지에서는 새 경로를 그대로 줘야 한다.
 #
 # 설정이 필수인 이유: 같은 DCRA 를 여러 설정이 몬다. 현장 원본이냐 축소 미리보기냐,
 # 노드를 몇 개로 쪼개느냐가 전부 .ndisplay 에서 정해진다 (bOverrideViewportsFromExternalConfig).
@@ -28,7 +30,7 @@ $ErrorActionPreference = "Stop"
 $exe = Join-Path $PSScriptRoot "Package\Windows\Moniter_2.exe"
 if (-not (Test-Path $exe)) { throw "$exe 가 없습니다. 먼저 Package.bat 을 돌리세요." }
 
-if ($Map -notlike "/Game/*") { $Map = "/Game/VprodProject/Maps/$Map" }
+if ($Map -notlike "/Game/*") { $Map = "/Game/Maps/$Map" }
 
 if (Test-Path $Config) { $cfg = (Resolve-Path $Config).Path }
 else { $cfg = Join-Path $PSScriptRoot "nDisplay\$($Config -replace '\.ndisplay$','').ndisplay" }

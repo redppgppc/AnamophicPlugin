@@ -110,7 +110,7 @@ td code { white-space:nowrap; }
 <p class="eyebrow">Unreal Engine 5.8 · nDisplay</p>
 <h1>AnamorphicRig 작업 현황</h1>
 <p class="stamp">
-  최종 갱신 <b>2026-09-02</b><br>
+  최종 갱신 <b>2026-09-03</b><br>
   사용법·원리 <b>02-guide.html</b> · 도면 요구사항 <b>03-drawing-requirements.md</b> ·
   <b>현장 값 입력 폼 04-site-input.html</b> · 옛 스크립트 근거 <b>00-overview.md</b>
 </p>
@@ -158,6 +158,66 @@ td code { white-space:nowrap; }
           <td><code>/hooks</code> 를 한 번 열거나 재시작</td>
           <td><code>.claude/</code> 가 세션 시작 시점에 없어서 설정 감시자가 안 보고 있다.
               그때까지 자동 커밋이 발동하지 않는다</td></tr>
+      <tr><td><span class="chip chip--todo">사용자</span></td>
+          <td>맵이 <code>/Game/Maps/</code> 로 옮겨졌다 (2026-09-03)</td>
+          <td>11개 맵이 <code>/Game/VprodProject/Maps/</code> 에서 이동. 옛 자리에는
+              <strong>리다이렉터 스텁</strong>(1~2 KB)만 남았다. <code>Run_Packaged.ps1</code> 의
+              하드코딩 경로는 고쳤다. 남은 것: 콘텐츠 브라우저에서
+              <strong>Fix Up Redirectors</strong> 로 스텁 정리.
+              <strong>리다이렉터는 쿡에 안 들어가므로</strong> 안 지우면 패키지에서만 맵을 못 찾는다</td></tr>
+      <tr><td><span class="chip chip--done">완료</span></td>
+          <td>맵 이동(레벨 트래블)은 <strong>nDisplay 가 이미 처리한다</strong> (2026-09-03 확인)</td>
+          <td><code>UDisplayClusterGameEngine::LoadMap</code> 이 <code>EndScene</code> → 로드 →
+              <code>StartScene</code> 순으로 돌고, <strong>게임을 일시정지한 뒤</strong>
+              <code>WaitForGameStart</code> 클러스터 이벤트로 전 노드를 배리어에 모은다.
+              노드마다 로딩이 달라도 동시에 재개한다.
+              <strong>새 맵에 DCRA 를 넣을 필요가 없다</strong> —
+              <code>DisplayClusterGameManager.cpp:73</code> 이 설정의 <code>assetPath + "_C"</code> 로
+              직접 스폰한다 (위치는 그 맵의 <code>PlayerStart</code>). 새 맵에는 PlayerStart 만 있으면 된다.
+              <br>이동시키는 방법: 입력이면 <code>ReplicatePrimary</code> 가 이미 복제하므로
+              키에 <code>Open Level</code> 만 붙이면 되고, 타이머·시퀀스 같은 계기는
+              <code>Emit Cluster Event Json</code> → 전 노드 <code>Open Level</code>.
+              <br><strong>제약:</strong> <code>.ndisplay</code> 는 엔진 초기화 때 한 번만 읽으므로
+              <strong>맵마다 다른 벽 형상은 못 쓴다.</strong> 이동 대상 맵들은 같은 리그를 공유해야 한다.
+              <br><strong>패키징:</strong> 새 맵이 DCRA 액터를 안 가지면 그 에셋이 쿡에 안 들어간다.
+              <code>DefaultGame.ini</code> 에
+              <code>+DirectoriesToAlwaysCook=(Path="/Game/AnamorphicRig")</code> 필요 (아직 없음)</td></tr>
+      <tr><td><span class="chip chip--todo">한계</span></td>
+          <td><code>follow_player</code> 는 <strong>회전을 끌 수 없다</strong> (2026-09-03)</td>
+          <td><code>DisplayClusterRootActor.cpp:1170</code> 이
+              <code>SetActorLocationAndRotation(카메라 위치, 카메라 회전)</code> 을 매 틱 부른다.
+              <strong>위치만 따라가는 옵션이 없다.</strong> 마우스 바인딩 제거는 회전 입력원 하나를
+              막은 것일 뿐이다. 벽은 물리적으로 안 도는데 리그가 돌면 가상 세계가 통째로 회전해
+              착시가 깨진다. 원래 <strong>ICVFX 촬영용</strong> 옵션이라 고정 설치에는 안 맞는다.
+              <br>회전 입력원은 프로젝트에 없다 (Turn/LookUp 미매핑, IMC 없음, 커스텀 폰·게임모드 없음).
+              그런데도 돈다면 <strong>OpenXR</strong> 이 유력하다. 확인: 플러그인을 끄거나
+              실행 인자에 <code>-nohmd</code> (<code>UnrealEngine.cpp:4594</code>).
+              <br>미리보기로 돌아다니려면 <strong>블루프린트</strong>로 위치만 따라가게 만들어야 한다
+              (<code>-game</code> 에서는 파이썬이 안 돈다)</td></tr>
+      <tr><td><span class="chip chip--todo">함정</span></td>
+          <td><code>GenerateCausticsTextures</code> 는 <strong>에디터 전용</strong>이다 (2026-09-03)</td>
+          <td>블루프린트에 <code>bIsEditorOnlyActor</code> 가 켜져 있다 (같은 플러그인의
+              <code>BP_WaterRenderer</code>·<code>BP_FluidSim_01</code>·<code>BP_BuoyancyExample</code>
+              에는 없다). <strong>게임·쿡 빌드에서 스폰 자체가 안 된다.</strong> 이펙트가 아니라
+              텍스처를 굽는 저작 도구다.
+              화면에 나오는 것은 <code>M_Caustics_LightFunction_Sun</code>(도메인
+              <code>MD_LightFunction</code>, 이미 <code>Caustics_Animated_01_HDR</code> 를 참조)을
+              <strong>라이트의 Light Function Material 슬롯</strong>에 꽂은 것이다.
+              Movable/Stationary 라이트여야 하고, 빛이 닿을 <strong>면</strong>이 시야 안에 있어야 한다
+              (<code>검증 방</code> 슬래브가 그 역할을 한다)</td></tr>
+      <tr><td><span class="chip chip--todo">조사중</span></td>
+          <td><code>mr_crabys_lighthouse</code> 의 물이 회색으로 나온다 (2026-09-03)</td>
+          <td>물은 메시 하나다. 머티리얼 6개가 <strong>전부 <code>VertexColor</code> 노드</strong>를 쓰고,
+              <code>tbpjr_gradient</code>(23개)·<code>Bubble</code>(12개)는 Opaque,
+              물이 쓰는 <code>waterSide</code>·<code>material</code>(각 1개)은 Translucent 다.
+              <strong>가설:</strong> glTF 가 스켈레탈 메시로 임포트되면서 버텍스 컬러가 유실됐고,
+              그라디언트 텍스처로 색을 내는 물체만 살아남았다.
+              <strong>아직 확인 못 함</strong> — <code>.uasset</code> 의
+              <code>bHasVertexColors</code> 문자열로는 판별이 안 된다(이름 테이블 공유).
+              확인은 콘솔 <code>showflag.VertexColors 1</code>.
+              <br>다만 이 물은 <strong>26.6 Mpx 벽에서 물로 안 읽힌다.</strong> 이 GLB 는 구도·스케일
+              프록시로 쓰고 물은 <code>Water Body</code> + <code>GerstnerWaves_Ocean</code> 으로
+              갈아끼우는 것이 맞다</td></tr>
       <tr><td><span class="chip chip--done">완료</span></td>
           <td><code>probe_site_curved_low</code> 프리셋 신설 (2026-09-02)</td>
           <td><code>probe_site_curved</code> 와 <strong><code>base_m</code> 하나만</strong> 다르다 (5.0 → 1.0).
