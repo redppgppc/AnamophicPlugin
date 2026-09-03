@@ -205,33 +205,32 @@ td code { white-space:nowrap; }
               <strong>라이트의 Light Function Material 슬롯</strong>에 꽂은 것이다.
               Movable/Stationary 라이트여야 하고, 빛이 닿을 <strong>면</strong>이 시야 안에 있어야 한다
               (<code>검증 방</code> 슬래브가 그 역할을 한다)</td></tr>
-      <tr><td><span class="chip chip--todo">함정</span></td>
-          <td><strong>반투명은 50 m 밖에서 조명을 잃는다</strong> — 이 프로젝트의 상수 (2026-09-03)</td>
-          <td>lit translucent 표면은 카메라 중심의 <strong>Translucency Lighting Volume</strong> 에서
-              조명을 받는다. 기본값이 안쪽 15 m / 바깥 <strong>50 m</strong> 다
-              (<code>TranslucentLighting.cpp:118-129</code>).
-              <strong>스위트스팟이 35 m 라 이 프로젝트는 콘텐츠가 상시로 경계에 걸린다</strong>
-              (검증 방 기준 x 3500~5600 cm). 볼륨 밖의 반투명 표면은 조명을 못 받아 평평한 회색이 된다.
-              <br><strong>에디터에서는 가까이 날아가서 보므로 멀쩡하고, 클러스터에서만 깨진다.</strong>
-              원인을 모르면 매번 헤맨다. 물·유리·안개·반투명 파티클이 전부 해당된다.
-              이미시브(빛줄기 등)는 볼륨을 안 써서 영향이 없다.
-              <br><strong>고치는 법:</strong> ① 머티리얼을 <code>Opaque</code> 로 (가장 쌈, 26.6 Mpx 에서 권장)
-              ② Translucency Lighting Mode 를 <code>Surface ForwardShading</code> 로 (볼륨 미사용, 비쌈)
-              ③ <code>r.TranslucencyLightingVolume.OuterDistance</code> 를 늘림
-              (같은 해상도로 넓은 범위를 덮어 조명이 거칠어진다).
-              <br>확인용으로 <code>DefaultEngine.ini</code> 의 <code>[SystemSettings]</code> 에 ③을
-              넣어 뒀다. <strong>확정되면 지울 것</strong>
-              <br>발견 경위: <code>mr_crabys_lighthouse</code> 의 물(<code>waterSide</code>,
-              Translucent + TwoSided)이 클러스터에서만 회색으로 나왔다</td></tr>
-      <tr><td><span class="chip chip--todo">조사중</span></td>
-          <td><code>mr_crabys_lighthouse</code> 의 물이 회색으로 나온다 (2026-09-03)</td>
+      <tr><td><span class="chip chip--done">완료</span></td>
+          <td><strong>임포트 머티리얼의 usage flag</strong> — 에디터는 되고 게임만 회색 (2026-09-03)</td>
+          <td>로그 한 줄이 답이었다:
+              <code>LogMaterial: Warning: Material .../waterSide missing usage flag MorphTargets!
+              <strong>Default Material will be used in game.</strong></code>
+              <br>머티리얼에 <strong>Used with Morph Targets</strong> 가 꺼져 있으면 모프 타깃 메시에
+              쓸 수 없어 <strong>언리얼 기본 회색 머티리얼</strong>로 대체된다.
+              <strong>에디터는 실행 중에 플래그를 자동으로 켜 주지만 게임 빌드는 안 켜 준다.</strong>
+              같은 로그가 <code>"will recompile every editor launch until resaved"</code> 라고
+              알려 준다 — 저장해야 고쳐진다는 뜻이다.
+              <br>이 씬은 물결이 <strong>모프 타깃 애니메이션</strong>이라 물 메시만 걸렸다.
+              등대·배는 스키닝만 써서 멀쩡했다. 그 차이가 "물만 회색"으로 보인 이유다.
+              <br><strong>교훈: 에디터에서 되고 클러스터에서만 이상하면 로그부터 볼 것.</strong>
+              <code>Saved/Logs/Moniter_2*.log</code> 에서
+              <code>missing usage flag</code> 로 찾으면 된다. Fab·Sketchfab glTF 를 임포트할 때마다
+              반복될 문제다</td></tr>
+      <tr><td><span class="chip chip--done">해결</span></td>
+          <td><code>mr_crabys_lighthouse</code> 의 물이 회색으로 나오던 건 (2026-09-03)</td>
           <td>물은 메시 하나다. 머티리얼 6개가 <strong>전부 <code>VertexColor</code> 노드</strong>를 쓰고,
               <code>tbpjr_gradient</code>(23개)·<code>Bubble</code>(12개)는 Opaque,
               물이 쓰는 <code>waterSide</code>·<code>material</code>(각 1개)은 Translucent 다.
               <strong>원인은 버텍스 컬러가 아니었다.</strong> 머티리얼 슬롯도 정상이고
               (<code>waterSide</code> 가 제대로 붙어 있다), 에디터에서는 파랗게 잘 나온다.
-              <strong>클러스터에서만 회색</strong>이고, 차이는 오직 <strong>카메라 거리</strong>다.
-              바로 위 항목(반투명 조명 볼륨)이 그 이유다.
+              <strong>usage flag(MorphTargets) 누락</strong>이었다. 바로 위 항목 참고.
+              <br>도중에 세운 가설들(버텍스 컬러 유실, 반투명 조명 볼륨 거리 제한)은 <strong>전부 틀렸다.</strong>
+              로그를 먼저 봤으면 한 번에 끝났을 문제다.
               <br>다만 이 물은 <strong>26.6 Mpx 벽에서 물로 안 읽힌다.</strong> 이 GLB 는 구도·스케일
               프록시로 쓰고 물은 <code>Water Body</code> + <code>GerstnerWaves_Ocean</code> 으로
               갈아끼우는 것이 맞다</td></tr>
