@@ -1,0 +1,278 @@
+<title>nDisplay 사용 범위</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans+KR:wght@400;500;600;700&display=swap">
+
+<style>
+/* 02-guide.html 과 같은 토큰. 두 문서가 한 벌로 보이게 한다. */
+:root {
+  --ground:#f5f8f8; --surface:#ffffff; --inset:#eef2f2;
+  --hairline:#d3dcdc; --hairline-2:#e3eaea;
+  --ink:#111a1c; --ink-2:#435254; --ink-3:#6d7d7f;
+  --wall:#0c7a72; --wall-soft:#d6ebe9;
+  --normal:#9c5b16; --normal-soft:#f6e8d8;
+  --spot:#ab373b; --spot-soft:#f7e0e0;
+  --code-ink:#1d2a2c;
+  --sans:"IBM Plex Sans KR","Malgun Gothic",system-ui,sans-serif;
+  --mono:"IBM Plex Mono","Nanum Gothic Coding","D2Coding",Consolas,monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --ground:#0c1315; --surface:#121b1d; --inset:#0a1113;
+    --hairline:#263436; --hairline-2:#1b2628;
+    --ink:#dbe5e6; --ink-2:#9fb0b1; --ink-3:#748688;
+    --wall:#3ed9cc; --wall-soft:#10312f;
+    --normal:#e0a05c; --normal-soft:#2e2317;
+    --spot:#ef7175; --spot-soft:#331b1c;
+    --code-ink:#cbd8d9;
+  }
+}
+:root[data-theme="dark"] {
+  --ground:#0c1315; --surface:#121b1d; --inset:#0a1113;
+  --hairline:#263436; --hairline-2:#1b2628;
+  --ink:#dbe5e6; --ink-2:#9fb0b1; --ink-3:#748688;
+  --wall:#3ed9cc; --wall-soft:#10312f;
+  --normal:#e0a05c; --normal-soft:#2e2317;
+  --spot:#ef7175; --spot-soft:#331b1c;
+  --code-ink:#cbd8d9;
+}
+
+body { margin:0; background:var(--ground); color:var(--ink);
+       font-family:var(--sans); font-size:1rem; line-height:1.7;
+       -webkit-font-smoothing:antialiased; }
+main { padding:3rem 1.5rem 6rem; max-width:80ch; margin:0 auto; }
+@media (min-width:780px) { main { padding:4rem 3rem 8rem; } }
+
+.eyebrow { font-family:var(--mono); font-size:0.72rem; font-weight:600;
+           letter-spacing:0.16em; text-transform:uppercase; color:var(--wall); margin:0 0 0.7rem; }
+h1 { font-size:2.3rem; font-weight:700; letter-spacing:-0.022em; line-height:1.14;
+     margin:0 0 0.9rem; text-wrap:balance; }
+.stamp { font-family:var(--mono); font-size:0.82rem; color:var(--ink-3);
+         border-top:1px solid var(--hairline); padding-top:0.85rem; margin:0 0 2.5rem; }
+.stamp b { color:var(--ink-2); font-weight:500; }
+
+/* 세션 시작 시 한눈에 읽을 카드. CLAUDE.md 0절이 요구하는 두 줄이다. */
+.now { border:1px solid var(--hairline); border-radius:5px; background:var(--surface);
+       padding:1.1rem 1.3rem; margin:0 0 2.5rem; }
+.now dl { margin:0; display:grid; grid-template-columns:5.5rem 1fr; gap:0.5rem 0.9rem; }
+.now dt { font-family:var(--mono); font-size:0.74rem; font-weight:600; letter-spacing:0.1em;
+          text-transform:uppercase; color:var(--ink-3); padding-top:0.22rem; }
+.now dd { margin:0; }
+.now .done { color:var(--wall); font-weight:600; }
+.now .next { color:var(--spot); font-weight:600; }
+
+section { margin-top:3rem; }
+h2 { font-size:1.5rem; font-weight:600; letter-spacing:-0.018em; line-height:1.25;
+     margin:0 0 1.1rem; padding-top:1rem; border-top:1px solid var(--hairline);
+     display:grid; grid-template-columns:2.3rem 1fr; gap:0.4rem; align-items:baseline; }
+h2 .n { font-family:var(--mono); font-size:1.1rem; font-weight:500; color:var(--wall); }
+h3 { font-size:1.05rem; font-weight:600; margin:1.9rem 0 0.5rem; text-wrap:balance; }
+p { margin:0 0 0.9rem; text-wrap:pretty; }
+a { color:var(--wall); }
+ul { margin:0 0 1rem; padding-left:1.3rem; }
+li { margin-bottom:0.42rem; }
+li::marker { color:var(--ink-3); }
+strong { font-weight:600; }
+
+code { font-family:var(--mono); font-size:0.88em; background:var(--inset); color:var(--code-ink);
+       padding:0.1em 0.36em; border-radius:3px; border:1px solid var(--hairline-2); }
+.block { background:var(--inset); border:1px solid var(--hairline-2); border-radius:4px;
+         overflow-x:auto; margin:0 0 1.2rem; }
+.block pre { margin:0; padding:1rem 1.2rem; font-family:var(--mono); font-size:0.83rem;
+             line-height:1.62; color:var(--code-ink); }
+.tablewrap { overflow-x:auto; margin:0 0 1.2rem; }
+table { border-collapse:collapse; width:100%; font-size:0.93rem; font-variant-numeric:tabular-nums; }
+th,td { text-align:left; vertical-align:top; padding:0.52rem 0.9rem 0.52rem 0;
+        border-bottom:1px solid var(--hairline-2); line-height:1.55; }
+th { font-weight:600; font-size:0.76rem; letter-spacing:0.06em; text-transform:uppercase;
+     color:var(--ink-3); border-bottom:1px solid var(--hairline); white-space:nowrap; }
+tbody tr:last-child td { border-bottom:0; }
+td code { white-space:nowrap; }
+
+.note { border-left:3px solid var(--wall); background:var(--wall-soft);
+        padding:0.85rem 1.1rem; margin:0 0 1.2rem; border-radius:0 4px 4px 0; }
+.note--warn { border-left-color:var(--spot); background:var(--spot-soft); }
+.note--tip  { border-left-color:var(--normal); background:var(--normal-soft); }
+.note p:last-child { margin-bottom:0; }
+.note-label { font-family:var(--mono); font-size:0.7rem; font-weight:600; letter-spacing:0.13em;
+              text-transform:uppercase; display:block; margin-bottom:0.28rem; color:var(--ink-2); }
+
+/* 상태 칩 */
+.chip { font-family:var(--mono); font-size:0.7rem; font-weight:600; letter-spacing:0.06em;
+        padding:0.1rem 0.45rem; border-radius:3px; white-space:nowrap; }
+.chip--todo { background:var(--spot-soft); color:var(--spot); }
+.chip--wait { background:var(--normal-soft); color:var(--normal); }
+.chip--done { background:var(--wall-soft); color:var(--wall); }
+@media (prefers-reduced-motion: reduce) { * { animation:none!important; transition:none!important; } }
+
+.g { color: var(--ink-3); font-weight: 400; }
+.g::before { content: "뜻 "; font-family: var(--mono); font-size: 0.72em;
+             letter-spacing: 0.1em; color: var(--wall); }
+table { word-break: keep-all; }
+.bar { display:grid; grid-template-columns:11rem 1fr; gap:0.5rem 0.9rem;
+       align-items:center; margin:0 0 0.5rem; }
+.bar .lab { font-size:0.86rem; color:var(--ink-2); }
+.bar .track { background:var(--inset); border:1px solid var(--hairline-2);
+              border-radius:3px; height:1.15rem; position:relative; }
+.bar .fill { position:absolute; inset:0 auto 0 0; border-radius:2px 0 0 2px; }
+.bar .fill.use { background:var(--wall-soft); border-right:2px solid var(--wall); }
+.bar .num { font-family:var(--mono); font-size:0.74rem; color:var(--ink-3);
+            position:absolute; right:0.45rem; top:50%; transform:translateY(-50%); }
+</style>
+
+<main>
+<p class="eyebrow">Unreal Engine 5.8 · nDisplay</p>
+<h1>nDisplay 를 얼마나 쓰고 있나</h1>
+<p class="stamp">
+  작성 <b>2026-08-31</b><br>
+  대상 <b>AnamorphicRig 플러그인 + Moniter_2 프로젝트</b> ·
+  현황 <b>todo.html</b> · 사용법 <b>02-guide.html</b>
+</p>
+
+<div class="now">
+  <dl>
+    <dt>요약</dt>
+    <dd><span class="done">클러스터 골격과 메시 투영만 쓴다</span> —
+        nDisplay 는 "메시로 워프해서 여러 창에 띄우는 실행기" 로만 쓰고,
+        그 메시와 블렌드를 만드는 계산은 전부 플러그인이 한다</dd>
+    <dt>뜻</dt>
+    <dd><span class="next">좁고 깊게</span> — 기능면은 좁지만, 쓰는 부분은
+        엔진 기본값을 안 쓰고 직접 생성한다. 그래서 갈아탈 때 비용이 한쪽에 몰려 있다</dd>
+  </dl>
+</div>
+
+<section>
+  <h2><span class="n">1</span><span>쓰고 있는 것</span></h2>
+  <div class="tablewrap"><table>
+    <thead><tr><th>기능</th><th>어떻게 쓰나</th></tr></thead>
+    <tbody>
+      <tr><td>클러스터 / 노드 / 뷰포트</td>
+          <td>핵심. <code>.ndisplay</code> 를 플러그인이 직접 생성한다. 노드 분할, 창 사각형,
+              프라이머리 지정까지.<br>
+              <span class="g">노드는 창 하나를 그리는 프로세스 하나다. 뷰포트는 그 창 안에서
+              한 화면 조각이 차지하는 사각형이다.</span></td></tr>
+      <tr><td><code>mesh</code> 투영 정책</td>
+          <td>워프 메시를 구워 <code>DisplayClusterScreenComponent</code> 에 싣는다.<br>
+              <span class="g">워프 메시는 평평한 렌더 결과를 실제 벽 모양에 맞게 휘어 주는
+              변형용 격자다.</span></td></tr>
+      <tr><td>DCRA<br>(<code>DisplayClusterRootActor</code>)</td>
+          <td>레벨에 리그로 심고, <code>bOverrideViewportsFromExternalConfig</code> 와
+              <code>bOverrideTransformsFromExternalConfig</code> 를 켜서 설정 파일이
+              블루프린트에 구워진 값을 덮어쓰게 한다.<br>
+              <span class="g">DCRA 는 nDisplay 리그 전체를 담는 액터다. 화면 컴포넌트와
+              시점이 그 밑에 붙는다.</span></td></tr>
+      <tr><td><code>renderSyncPolicy: ethernet</code></td>
+          <td>노드가 둘 이상일 때 프레임 동기. 소프트웨어 배리어다</td></tr>
+      <tr><td><code>inputSyncPolicy: ReplicatePrimary</code></td>
+          <td>2026-08-31 추가. 프라이머리의 키 상태를 나머지 노드에 복제한다</td></tr>
+      <tr><td><code>DefaultViewPoint</code> 카메라</td>
+          <td>스위트스팟. 오프액시스 절두체가 여기서 나온다.<br>
+              <span class="g">스위트스팟은 착시가 정확히 맞아 보이는 관람 지점이다.</span></td></tr>
+      <tr><td>MRQ 연동<br>(<code>DisplayClusterMoviePipeline</code>)</td>
+          <td>영상 경로. 출력 해상도가 뷰포트와 맞는지 점검하는 메뉴까지 있다.<br>
+              <span class="g">MRQ 는 무비 렌더 큐. 엔진 화면을 영상 파일로 굽는 기능이다.</span></td></tr>
+    </tbody>
+  </table></div>
+  <p>
+    파이썬에서 만지는 nDisplay 클래스는 <strong>네 개뿐이다</strong>:
+    <code>DisplayClusterRootActor</code>, <code>DisplayClusterScreenComponent</code>,
+    <code>DisplayClusterCameraComponent</code>, <code>DisplayClusterConfigurationRectangle</code>.
+  </p>
+</section>
+
+<section>
+  <h2><span class="n">2</span><span>안 쓰는 것</span></h2>
+  <p>
+    엔진의 nDisplay 는 모듈이 28개다. 그중 건드리는 것은 <code>DisplayCluster</code>(코어),
+    <code>DisplayClusterConfiguration</code>(JSON), <code>DisplayClusterProjection</code>(mesh),
+    <code>DisplayClusterMoviePipeline</code>(MRQ) 정도다.
+  </p>
+  <div class="tablewrap"><table>
+    <thead><tr><th>안 쓰는 기능</th><th>언제 필요해지나</th></tr></thead>
+    <tbody>
+      <tr><td><strong>투영 정책 9종</strong><br>
+              <code>MPCDI</code>, <code>VIOSO</code>, <code>EasyBlend</code>,
+              <code>Domeprojection</code>, <code>Camera</code>, <code>Manual</code>,
+              <code>Link</code>, <code>Reference</code></td>
+          <td>프로젝터 캘리브레이션을 <strong>카메라 측정</strong>으로 갈 때.
+              todo 3절의 "캘리브레이션 방식" 항목이 이걸 가른다.<br>
+              <span class="g">캘리브레이션은 화면이 실제 벽에 정확히 맞도록 보정값을
+              잡는 작업이다. 카메라로 재는 방식과 도면에서 계산하는 방식이 있다.</span></td></tr>
+      <tr><td><strong>ICVFX 일체</strong><br>
+              인너 프러스텀, 라이트 카드, 크로마키, 컬러 그레이딩, Operator 패널</td>
+          <td>인카메라 VFX 촬영용이다. 이 프로젝트는 관람용 착시라 해당 없음.<br>
+              <span class="g">ICVFX 는 LED 벽을 배경으로 두고 카메라로 찍는 촬영 방식이다.
+              카메라가 보는 영역만 따로 고품질로 그리는 것이 인너 프러스텀이다.</span></td></tr>
+      <tr><td><code>DisplayClusterMedia</code>,<br><code>SharedMemoryMedia</code></td>
+          <td>노드 사이로 영상을 실어 나를 때. 여러 PC 로 나누면 필요해진다</td></tr>
+      <tr><td><code>DisplayClusterReplication</code></td>
+          <td>여러 PC 에서 게임플레이를 맞출 때</td></tr>
+      <tr><td>RemoteControl · MessageInterceptor · MultiUser</td>
+          <td>운영 중 원격 제어, 협업 편집</td></tr>
+      <tr><td>StageMonitoring · Monitor</td>
+          <td>현장 상태 감시</td></tr>
+      <tr><td><code>renderSyncPolicy: nvidia</code></td>
+          <td>Quadro Sync 하드웨어가 들어올 때. 지금은 소프트웨어 배리어다</td></tr>
+      <tr><td>Switchboard</td>
+          <td>여러 PC 를 한 자리에서 띄우고 관리할 때</td></tr>
+      <tr><td>스테레오</td>
+          <td>설정에 <code>stereoOffset: None</code> 으로 꺼 두었다. 입체가 필요하면</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section>
+  <h2><span class="n">3</span><span>엔진에도 있지만 직접 만든 것</span></h2>
+  <p>
+    여기가 이 프로젝트의 성격을 가장 잘 보여준다. 플러그인 4183줄 중 대부분이
+    <strong>nDisplay 가 받아 갈 입력을 만드는 계산</strong>이다.
+  </p>
+  <div class="tablewrap"><table>
+    <thead><tr><th>직접 만든 것</th><th>줄 수</th><th>엔진의 대응물</th></tr></thead>
+    <tbody>
+      <tr><td>워프 메시 생성 (<code>geometry.py</code>)</td><td>548</td>
+          <td><code>MPCDI</code> / <code>PFM</code> 임포트 경로.<br>
+              <span class="g">PFM 은 화면의 각 점이 실제 공간 어디인지를 적어 둔 파일 형식이다.</span></td></tr>
+      <tr><td>알파 블렌딩 (<code>blend.py</code>)</td><td>268</td>
+          <td><code>MPCDI</code> / <code>VIOSO</code> 가 제공하는 기능.<br>
+              <span class="g">프로젝터 화면이 겹치는 구간에서 밝기를 서서히 줄여
+              이음매를 안 보이게 하는 처리다.</span></td></tr>
+      <tr><td>프로젝터 배치·밀도·입사각 분석 (<code>projector.py</code>)</td><td>420</td>
+          <td>엔진에 없다</td></tr>
+      <tr><td>영상 변환 (<code>video.py</code>)</td><td>469</td>
+          <td>엔진 밖. ffmpeg 직접 호출</td></tr>
+      <tr><td>설정 생성·실행 (<code>config.py</code>, <code>build.py</code>)</td><td>801</td>
+          <td>nDisplay Configurator (에디터 UI).<br>
+              손으로 찍는 대신 도면 값에서 유도하려고 직접 만들었다</td></tr>
+    </tbody>
+  </table></div>
+  <div class="note">
+    <span class="note-label">그래서</span>
+    <p>nDisplay 는 <strong>실행기</strong> 역할만 한다. 워프 메시와 블렌드를 만드는 계산은
+       전부 플러그인 쪽이다. 이 구조의 장점은 도면 값이 바뀌면 숫자 하나 고쳐서 전부 다시
+       뽑을 수 있다는 것이고, 단점은 엔진이 제공하는 캘리브레이션 생태계를 못 쓴다는 것이다.</p>
+  </div>
+</section>
+
+<section>
+  <h2><span class="n">4</span><span>이 선택이 언제 뒤집히나</span></h2>
+  <p>
+    <strong>7단계(워프 메시 / PFM 출력)를 어떻게 가느냐가 비율을 바꾼다.</strong>
+  </p>
+  <div class="tablewrap"><table>
+    <thead><tr><th>캘리브레이션 방식</th><th>결과</th></tr></thead>
+    <tbody>
+      <tr><td><strong>카메라 측정</strong> (VIOSO 등)</td>
+          <td><code>blend.py</code> 와 워프 메시 생성이 <strong>통째로 엔진 정책으로 대체</strong>된다.
+              투영 정책이 <code>mesh</code> 에서 <code>VIOSO</code> / <code>MPCDI</code> 로 바뀐다.
+              곡면이 부담이 아니게 된다</td></tr>
+      <tr><td><strong>CAD 계산</strong> (지금 방식)</td>
+          <td>지금 구조 그대로. 대신 도면 정확도가 곧 화면 정확도가 된다</td></tr>
+    </tbody>
+  </table></div>
+  <p>
+    todo 3절의 "캘리브레이션 방식" 이 아직 미확인인 이유가 이것이다.
+    이 한 줄이 플러그인 절반의 운명을 정한다.
+  </p>
+</section>
+</main>
