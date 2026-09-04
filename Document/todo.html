@@ -110,7 +110,7 @@ td code { white-space:nowrap; }
 <p class="eyebrow">Unreal Engine 5.8 · nDisplay</p>
 <h1>AnamorphicRig 작업 현황</h1>
 <p class="stamp">
-  최종 갱신 <b>2026-09-03</b><br>
+  최종 갱신 <b>2026-09-04</b><br>
   사용법·원리 <b>02-guide.html</b> · 도면 요구사항 <b>03-drawing-requirements.md</b> ·
   <b>현장 값 입력 폼 04-site-input.html</b> · 옛 스크립트 근거 <b>00-overview.md</b>
 </p>
@@ -205,6 +205,29 @@ td code { white-space:nowrap; }
               <strong>라이트의 Light Function Material 슬롯</strong>에 꽂은 것이다.
               Movable/Stationary 라이트여야 하고, 빛이 닿을 <strong>면</strong>이 시야 안에 있어야 한다
               (<code>검증 방</code> 슬래브가 그 역할을 한다)</td></tr>
+      <tr><td><span class="chip chip--done">완료</span></td>
+          <td><strong><code>Plugins/</code> 만 넘겨도 되게 정리</strong> (2026-09-04)</td>
+          <td><strong>플러그인이 프로젝트 설정을 물려줄 수 있다.</strong> 엔진이 플러그인의
+              <code>Config/</code> 안 <code>.ini</code> 를 찾아 프로젝트 설정 계층에 레이어로 끼운다
+              (<code>ConfigCacheIni.cpp:7222 AddPluginsToBranches</code>). 엔진 플러그인에도 사례가 있다
+              (<code>Rivermax/RivermaxMedia/Config/DefaultEngine.ini</code>).
+              <br>① <code>Plugins/AnamorphicRig/Config/DefaultInput.ini</code> 신설 —
+              <code>DefaultPlayerInputClass</code> 와 WASD/QE 축 매핑을 들고 간다.
+              <br>② 루트 스크립트 3개를 <code>Resources/Scripts/</code> 로 옮기고,
+              메뉴 <code>벽 &gt; 배포 스크립트 설치</code> 가 프로젝트 루트로 복사한다.
+              바이트 그대로 복사한다 (<code>.bat</code> 은 CP949+CRLF 라 다시 쓰면 깨진다).
+              <br>③ <code>env.py</code> 신설. <code>형상 점검</code> 이 입력 클래스·축 매핑·
+              <code>ffmpeg</code>·MovieRenderPipeline·스크립트 유무를 먼저 찍는다.
+              <strong>여기서 잡는 것은 전부 조용히 실패한다</strong> — 안 알려 주면 받는 쪽이
+              원인을 못 찾는다.
+              <br>④ <code>.uplugin</code> 에 MovieRenderPipeline 의존성 추가, 설명 보강.
+              <code>EnabledByDefault</code> 는 <strong>true 로 남겼다</strong> —
+              &quot;Plugins 에 넣기만 하면 된다&quot; 가 목표라 켜는 단계를 하나 없애는 쪽이 맞다.
+              <br><strong>넘을 수 없는 한계:</strong> <code>DefaultPlayerInputClass</code> 는 배열이 아니라
+              단일 키라, 호스트 프로젝트가 명시하면 프로젝트가 이긴다 (VP 템플릿이 실제로
+              <code>EnhancedPlayerInput</code> 을 명시한다). ③이 그걸 잡아 준다.
+              <code>ffmpeg</code> 은 라이선스·용량 때문에 같이 못 준다.
+              <br><strong>남은 것:</strong> <code>Resources/Icon128.png</code> 아직 없음 (2.5 참고)</td></tr>
       <tr><td><span class="chip chip--done">완료</span></td>
           <td><strong>임포트 머티리얼의 usage flag</strong> — 에디터는 되고 게임만 회색 (2026-09-03)</td>
           <td>로그 한 줄이 답이었다:

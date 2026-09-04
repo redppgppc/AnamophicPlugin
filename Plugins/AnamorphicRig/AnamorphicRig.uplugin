@@ -3,7 +3,7 @@
 	"Version": 1,
 	"VersionName": "0.1.0",
 	"FriendlyName": "Anamorphic Rig",
-	"Description": "꺾인 LED 벽과 다중 패널 리그를 위한 nDisplay 설정·워프 메시·영상 변환 도구.",
+	"Description": "꺾인 LED 벽과 다중 패널 리그를 위한 nDisplay 설정·워프 메시 생성 도구. 프로젝터 배치 검토, 이음매 알파 블렌드, 프로젝터별 영상 변환도 포함한다. 영상 변환 기능은 PATH 에 ffmpeg 이 있어야 동작한다.",
 	"Category": "Virtual Production",
 	"CreatedBy": "",
 	"CreatedByURL": "",
@@ -21,6 +21,10 @@
 		},
 		{
 			"Name": "nDisplay",
+			"Enabled": true
+		},
+		{
+			"Name": "MovieRenderPipeline",
 			"Enabled": true
 		}
 	]

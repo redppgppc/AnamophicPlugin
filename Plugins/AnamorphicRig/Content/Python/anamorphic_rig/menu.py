@@ -8,6 +8,7 @@ import unreal
 
 from . import build as B
 from . import config as CF
+from . import env as EN
 from . import presets as PR
 from . import blend as BL
 from . import projector as PJ
@@ -127,6 +128,7 @@ def act_save(s=None):
     lines, warns = R.summarize(wall, S.res_w_of(s, wall), s.warn_grazing_deg,
                                s.warn_band_pct, s.warn_density_ratio,
                                s.warn_video_w)
+    lines, warns = env_lines + [""] + lines, env_warns + warns
     for l in lines:
         _log(l)
     for w in warns:
@@ -238,6 +240,9 @@ def _opts(s):
 def act_check(s=None):
     s = current_settings() if s is None else s      # 설정 대화상자가 편집 중인 값을 넘긴다
     wall = S.to_wall(s)
+    # 플러그인만 받아 온 프로젝트에서 뭐가 빠졌는지 먼저 본다. 여기서 잡는 것들은
+    # 전부 조용히 실패해서, 안 알려 주면 원인을 못 찾는다.
+    env_lines, env_warns = EN.check()
     lines, warns = R.summarize(wall, S.res_w_of(s, wall), s.warn_grazing_deg,
                                s.warn_band_pct, s.warn_density_ratio,
                                s.warn_video_w)
@@ -378,6 +383,22 @@ def act_probe(s=None):
         raise RuntimeError("DCRA 가 없습니다. 먼저 '벽 만들기' 를 실행할 것")
     B.spawn_probe_room(dcra, S.to_wall(s))
     _log("검증 방 놓음. 클러스터 실행으로 코너가 사라지는지 볼 것")
+
+
+def act_install_scripts():
+    """플러그인이 들고 있는 배포 스크립트를 프로젝트 루트에 복사한다."""
+    done, skipped = EN.install_scripts()
+    if skipped and not done:
+        if not _ask("배포 스크립트 설치",
+                    "이미 있습니다: %s%s%s덮어쓸까요?"
+                    % (", ".join(skipped), chr(10), chr(10))):
+            return
+        done, skipped = EN.install_scripts(overwrite=True)
+    for n in done:
+        _log("설치: " + n)
+    _dialog("배포 스크립트 설치",
+            "복사함: %s%s건너뜀: %s"
+            % (", ".join(done) or "없음", chr(10), ", ".join(skipped) or "없음"))
 
 
 def act_launch(s=None):
@@ -672,6 +693,8 @@ GROUPS = [
         ("Probe", "검증 방 놓기 / 지우기",
          "벽 뒤에 격자 방을 판다. 착시가 맞으면 코너가 사라진다. 다시 누르면 지운다", act_probe),
         ("Launch", "클러스터 실행", "nDisplay 창을 별도 프로세스로 띄운다", act_launch),
+        ("Scripts", "배포 스크립트 설치",
+         "Package.bat / Run_Packaged.ps1 등을 프로젝트 루트에 복사한다. 플러그인만 받았을 때 한 번 누른다", act_install_scripts),
         ("Proj", "프로젝터 배치 점검", "담당 구간·화각·입사각·겹침·밀도 교차점을 낸다", act_projectors),
         ("Blend", "블렌드 맵 만들기", "프로젝터별 알파 맵을 nDisplay/blend 에 쓴다", act_blend),
     ]),
