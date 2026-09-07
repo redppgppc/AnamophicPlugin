@@ -206,6 +206,22 @@ td code { white-space:nowrap; }
               Movable/Stationary 라이트여야 하고, 빛이 닿을 <strong>면</strong>이 시야 안에 있어야 한다
               (<code>검증 방</code> 슬래브가 그 역할을 한다)</td></tr>
       <tr><td><span class="chip chip--done">완료</span></td>
+          <td><strong>SVN 업로드 폴더 동기화 스크립트</strong> (2026-09-07)</td>
+          <td>루트에 <code>Sync_SVN.ps1</code>. 대상은
+              <code>D:	runk\Anamorphic\AnamorphicPlugin</code>
+              (<code>D:	runk\Anamorphic</code> 작업 사본 안이다).
+              <br><strong>보낼 목록은 <code>git ls-files</code> 가 정한다.</strong>
+              <code>.gitignore</code> 에 &quot;배포 대상이 아닌 것&quot; 이 이미 다 적혀 있어서,
+              제외 목록을 두 벌 관리하면 반드시 어긋난다.
+              <br>크기와 수정 시각이 같으면 건너뛴다 (재실행하면 <code>복사함 0개</code>).
+              한글 경로(<code>Content/새_폴더</code>)가 있어 콘솔 인코딩을 UTF-8 로 맞춘다.
+              <br><code>svn add --force</code> 까지만 하고 <strong>커밋은 안 한다</strong> —
+              공유 서버라 사람이 눌러야 한다.
+              <br><strong>발견:</strong> 대상에 재생성물 41개가 이미 커밋돼 있다
+              (<code>*_curved.mp4</code>·<code>*_eye.mp4</code>·<code>proj/</code>·
+              <code>blend_*.pgm</code>·<code>__pycache__</code>).
+              <code>-Prune</code> 을 붙이면 <code>svn delete</code> 로 정리한다. 기본은 목록만 보여 준다</td></tr>
+      <tr><td><span class="chip chip--done">완료</span></td>
           <td><strong>메뉴 정리 + 영상 도구 패널</strong> (2026-09-07)</td>
           <td><code>설정 편집</code> 패널에 버튼으로 이미 있는 4개
               (<code>형상 점검</code>·<code>평면도</code>·<code>벽 만들기</code>·<code>클러스터 실행</code>)
