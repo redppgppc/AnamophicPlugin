@@ -13,10 +13,16 @@
   "anchor_seam": 1,
   "rotate_deg": 0.0,
   "pitch_mm": 7.800000190734863,
+  "wall_auto_res": true,
+  "wall_res_x": 0,
   "video_passthrough": true,
   "exposure_bias": 0.0,
   "hide_screen_messages": true,
   "show_floor": true,
+  "follow_player": false,
+  "exit_on_esc": true,
+  "multi_node": false,
+  "fit_preview": true,
   "arc_seg": 24,
   "face_seg": 8,
   "seg_v": 4,
@@ -25,13 +31,18 @@
   "warn_grazing_deg": 20.0,
   "warn_band_pct": 60.0,
   "warn_density_ratio": 2.0,
+  "warn_blend_pct": 8.0,
+  "blend_gamma": 1.0,
+  "bake_blend": false,
+  "warn_video_w": 4096,
+  "version": 2,
   "video_path": "Content/Movies/TestPattern_curved.mp4",
   "panels": [
     {
       "name": "screen_left",
       "width_m": 0.3540000021457672,
       "height_m": 0.39800000190734863,
-      "center_z_m": -0.04600000008940697,
+      "panel_base_m": 1.3550000190734863,
       "auto_res": false,
       "res_x": 1280,
       "res_y": 1440,
@@ -44,7 +55,7 @@
       "name": "screen_right",
       "width_m": 0.7080000042915344,
       "height_m": 0.39800000190734863,
-      "center_z_m": -0.04600000008940697,
+      "panel_base_m": 1.3550000190734863,
       "auto_res": false,
       "res_x": 2560,
       "res_y": 1440,
@@ -60,5 +71,6 @@
       "convex": true,
       "gap_m": 0.0
     }
-  ]
+  ],
+  "projectors": []
 }

@@ -128,7 +128,6 @@ def act_save(s=None):
     lines, warns = R.summarize(wall, S.res_w_of(s, wall), s.warn_grazing_deg,
                                s.warn_band_pct, s.warn_density_ratio,
                                s.warn_video_w)
-    lines, warns = env_lines + [""] + lines, env_warns + warns
     for l in lines:
         _log(l)
     for w in warns:
@@ -246,6 +245,7 @@ def act_check(s=None):
     lines, warns = R.summarize(wall, S.res_w_of(s, wall), s.warn_grazing_deg,
                                s.warn_band_pct, s.warn_density_ratio,
                                s.warn_video_w)
+    lines, warns = env_lines + [""] + lines, env_warns + warns
     for l in lines:
         _log(l)
     for w in warns:

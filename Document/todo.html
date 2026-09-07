@@ -206,6 +206,23 @@ td code { white-space:nowrap; }
               Movable/Stationary 라이트여야 하고, 빛이 닿을 <strong>면</strong>이 시야 안에 있어야 한다
               (<code>검증 방</code> 슬래브가 그 역할을 한다)</td></tr>
       <tr><td><span class="chip chip--done">완료</span></td>
+          <td><strong>영상 파일을 바꿔도 안 바뀐다</strong> (2026-09-07)</td>
+          <td>두 가지가 겹쳐 있었다.
+              <br>① <code>menu.py</code> 의 환경 점검 병합 줄이 <code>act_check</code> 가 아니라
+              <code>act_save</code> 에 들어가 있어 <code>name 'env_lines' is not defined</code> 가 떴다.
+              <code>PR.save()</code> 뒤에 터져서 <strong>프리셋 저장 자체는 되고 있었다</strong>.
+              올바른 자리로 옮겼다.
+              <br>② 진짜 원인. 영상 경로는 설정에서 실시간으로 읽지 않고
+              <strong><code>벽 만들기</code> 때 레벨의 <code>AR_video</code> 액터에 구워진다</strong>
+              (<code>build.py:181</code> <code>external_media_path</code>).
+              저장만으로는 레벨 안 액터가 그대로다. <code>벽 만들기</code> 를 다시 눌러야 한다
+              (<code>build_level</code> 이 <code>AR_</code> 액터를 지우고 새로 놓는다,
+              <code>build.py:344</code>).
+              <br><strong>영상은 프리셋이 아니라 레벨에 속한다.</strong> 레벨마다 따로 박혀 있다:
+              <code>testCurveMovie</code>=TestPattern_curved, <code>Curved</code>=TestPattern_wall,
+              <code>Square</code>·<code>FlatWall</code>=MediaExample_wall.
+              프리셋을 바꿔도 <code>벽 만들기</code> 를 누른 레벨만 반영된다</td></tr>
+      <tr><td><span class="chip chip--done">완료</span></td>
           <td><strong><code>Plugins/</code> 만 넘겨도 되게 정리</strong> (2026-09-04)</td>
           <td><strong>플러그인이 프로젝트 설정을 물려줄 수 있다.</strong> 엔진이 플러그인의
               <code>Config/</code> 안 <code>.ini</code> 를 찾아 프로젝트 설정 계층에 레이어로 끼운다
