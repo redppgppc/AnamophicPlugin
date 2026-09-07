@@ -439,7 +439,10 @@ def preview(plan, src, out_dir, width=None, log=print):
     os.makedirs(out_dir, exist_ok=True)
     dst = os.path.join(out_dir, os.path.splitext(os.path.basename(src))[0] + "_eye.mp4")
     aspect = plan.plane()[5]
-    pw = int(width)
+    # 착시가 맞는지 눈으로 보는 용도라 벽 해상도까지 갈 필요가 없다. 4K 를 넘기면
+    # 인코딩만 오래 걸리고 플레이어도 버거워한다.
+    pw = int(width or min(plan.out_w, 3840))
+    pw -= pw % 2                                    # yuv420 은 짝수 폭이 필요
     ph = round(pw / aspect / 2) * 2
     log("눈 시점 맵 준비 중... (%dx%d)" % (pw, ph))
     xm, ym = plan.eye_maps(pw, ph)

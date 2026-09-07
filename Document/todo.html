@@ -206,6 +206,18 @@ td code { white-space:nowrap; }
               Movable/Stationary 라이트여야 하고, 빛이 닿을 <strong>면</strong>이 시야 안에 있어야 한다
               (<code>검증 방</code> 슬래브가 그 역할을 한다)</td></tr>
       <tr><td><span class="chip chip--done">완료</span></td>
+          <td><strong>메뉴 정리 + 영상 도구 패널</strong> (2026-09-07)</td>
+          <td><code>설정 편집</code> 패널에 버튼으로 이미 있는 4개
+              (<code>형상 점검</code>·<code>평면도</code>·<code>벽 만들기</code>·<code>클러스터 실행</code>)
+              를 메뉴에서 뺐다. 영상 관련 8개는 <code>settings.py</code> 의
+              <code>ARVideoTools</code> 로 묶어 <code>설정 편집</code> 과 같은 모달리스 탭으로 뺐다
+              (메뉴에는 <code>영상 도구</code> 하나만 남는다).
+              <br>같이 잡은 것: <code>video.py preview()</code> 의 <code>width</code> 기본값이
+              <code>None</code> 인데 <code>int(width)</code> 를 그냥 불러서
+              <strong><code>눈 시점으로 되돌려 보기</code> 가 여태 한 번도 안 돌았다.</strong>
+              <code>min(plan.out_w, 3840)</code> 으로 기본값을 줬다 (검증용이라 벽 해상도까지
+              갈 필요가 없다)</td></tr>
+      <tr><td><span class="chip chip--done">완료</span></td>
           <td><strong>영상 파일을 바꿔도 안 바뀐다</strong> (2026-09-07)</td>
           <td>두 가지가 겹쳐 있었다.
               <br>① <code>menu.py</code> 의 환경 점검 병합 줄이 <code>act_check</code> 가 아니라
