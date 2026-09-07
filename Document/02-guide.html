@@ -422,35 +422,52 @@ hr { border: 0; border-top: 1px solid var(--hairline-2); margin: 2.5rem 0; }
 <!-- 3 -->
 <section id="s3" class="col col--wide">
   <div class="h2row"><span class="n">03</span><h2>메뉴 한 바퀴</h2></div>
-  <p><code>Tools &gt; Anamorphic Rig</code> 아래 세 묶음이다.</p>
+  <p>
+    <code>Tools &gt; Anamorphic Rig</code> 는 <strong>패널을 여는 입구</strong>에 가깝다.
+    자주 쓰는 동작은 메뉴가 아니라 <strong>패널 두 개</strong> 안에 버튼으로 있다.
+    <span class="g">패널은 도킹되는 보통 탭이다. 모달 대화상자와 달리 열어 둔 채로
+    뷰포트를 보면서 누를 수 있다.</span>
+  </p>
 
-  <h3>프리셋</h3>
+  <h3>3.1 메뉴</h3>
   <div class="tablewrap"><table>
-    <thead><tr><th>항목</th><th>하는 일</th></tr></thead>
+    <thead><tr><th>묶음</th><th>항목</th><th>하는 일</th></tr></thead>
     <tbody>
-      <tr><td><strong>설정 편집</strong></td><td>설정을 <strong>도킹 탭</strong>으로 연다. 모달이 아니라 뷰포트를 보면서 만질 수 있다<br>
+      <tr><td rowspan="3">프리셋</td>
+          <td><strong>설정 편집</strong></td><td>설정 패널을 연다. <strong>여기서 대부분의 작업이 끝난다</strong> (3.2)<br>
       <span class="g">뷰포트는 화면을 그려 내는 영역 하나다. 에디터에서는 3D 를 보여 주는 창,
       nDisplay 에서는 출력 하나를 가리킨다.</span></td></tr>
       <tr><td>프리셋 불러오기</td><td>저장된 현장 목록에서 골라 활성으로 삼는다</td></tr>
       <tr><td>프리셋 다른 이름으로 저장</td><td>지금 값을 새 이름으로 복사한다</td></tr>
-    </tbody>
-  </table></div>
-  <div class="note note--warn">
-    <span class="note-label">자동 저장 아님</span>
-    <p>
-      설정 탭 안 <code>실행</code> 항목의 <strong>저장</strong> 버튼을 눌러야 JSON 에 남는다.
-      탭 맨 위 <code>00 프리셋</code> 에 지금 편집 중인 프리셋 이름이 보인다.
-      <strong>저장은 그 이름으로 간다</strong> — 도중에 다른 프리셋을 불러와도 마찬가지다.
-    </p>
-  </div>
 
-  <h3>벽</h3>
-  <div class="tablewrap"><table>
-    <thead><tr><th>항목</th><th>하는 일</th></tr></thead>
-    <tbody>
-      <tr><td><strong>형상 점검</strong></td><td>크기·비율·화각·입사각과 경고를 낸다. 값 바꿀 때마다 누른다<br>
+      <tr><td rowspan="4">벽</td>
+          <td>검증 방 놓기 / 지우기</td><td>벽 뒤에 격자 방을 판다. 착시가 맞으면 코너가 사라진다. 다시 누르면 지운다</td></tr>
+      <tr><td>배포 스크립트 설치</td><td><code>Package.bat</code> 등을 프로젝트 루트에 복사한다.
+          <strong><code>Plugins/</code> 만 받았을 때 한 번</strong> 누른다</td></tr>
+      <tr><td>프로젝터 배치 점검</td><td>화각·입사각·밀도·겹침·교차점. 개선안을 제안한다 (10절)<br>
       <span class="g">화각은 한 번에 담기는 각도 범위, 입사각은 시선이 벽면과 이루는 각이다.
       90도면 정면으로 마주 보고, 작을수록 스치듯 놓인다. 자세한 것은 9.7.</span></td></tr>
+      <tr><td>블렌드 맵 만들기</td><td>프로젝터별 알파 맵을 <code>nDisplay/blend</code> 에 쓴다<br>
+      <span class="g">겹친 자리에서 두 대의 밝기를 서로 반대로 흐리게 해 이음매를 숨기는 것이
+      블렌딩이고, 알파 맵은 그 흐림 정도를 화소마다 적어 둔 그림이다.</span></td></tr>
+
+      <tr><td>영상</td>
+          <td><strong>영상 도구</strong></td><td>영상 패널을 연다 (3.3)</td></tr>
+    </tbody>
+  </table></div>
+  <p>
+    아래 두 묶음은 <strong>LED 벽이면 쓰지 않는다.</strong> <code>08 프로젝터</code> 목록이
+    비어 있으면 프로젝터 관련 동작은 전부 꺼진다.
+  </p>
+
+  <h3>3.2 설정 패널 — <code>실행</code> 항목</h3>
+  <p>값을 넣는 <code>00</code>~<code>08</code> 항목 아래, 맨 끝 <code>실행</code> 에 버튼이 있다.</p>
+  <div class="tablewrap"><table>
+    <thead><tr><th>버튼</th><th>하는 일</th></tr></thead>
+    <tbody>
+      <tr><td><strong>저장</strong></td><td>편집 중인 값을 활성 프리셋 파일에 기록한다</td></tr>
+      <tr><td><strong>형상 점검</strong></td><td>크기·비율·화각·입사각과 경고를 낸다. 값 바꿀 때마다 누른다.
+          플러그인만 받아 온 프로젝트에서 <strong>뭐가 빠졌는지</strong>도 먼저 찍는다</td></tr>
       <tr><td><strong>평면도 보기 / 지우기</strong></td><td>에디터 뷰포트에 평면도를 그린다. 다시 누르면 지우고 카메라도 되돌린다</td></tr>
       <tr><td><strong>벽 만들기</strong></td><td>워프 메시 + nDisplay 리그 + 바닥 + PlayerStart 를 현재 레벨에 만든다<br>
       <span class="g">워프 메시는 벽 모양대로 휜 격자다. 영상을 여기 붙이면 평평한 파일이 벽
@@ -458,37 +475,44 @@ hr { border: 0; border-top: 1px solid var(--hairline-2); margin: 2.5rem 0; }
       <tr><td>클러스터 실행</td><td>nDisplay 창을 별도 프로세스로 띄운다<br>
       <span class="g">클러스터는 nDisplay 가 화면 출력을 맡는 PC 들을 묶어 부르는 이름이다.
       한 대뿐이어도 클러스터다.</span></td></tr>
-      <tr><td>프로젝터 배치 점검</td><td>화각·입사각·밀도·겹침·교차점. 개선안을 제안한다 (10절)</td></tr>
-      <tr><td>블렌드 맵 만들기</td><td>프로젝터별 알파 맵을 <code>nDisplay/blend</code> 에 쓴다<br>
-      <span class="g">겹친 자리에서 두 대의 밝기를 서로 반대로 흐리게 해 이음매를 숨기는 것이
-      블렌딩이고, 알파 맵은 그 흐림 정도를 화소마다 적어 둔 그림이다.</span></td></tr>
     </tbody>
   </table></div>
+  <div class="note note--warn">
+    <span class="note-label">자동 저장 아님</span>
+    <p>
+      <strong>저장</strong> 을 눌러야 JSON 에 남는다. 탭 맨 위 <code>00 프리셋</code> 에 지금
+      편집 중인 프리셋 이름이 보인다. <strong>저장은 그 이름으로 간다</strong> —
+      도중에 다른 프리셋을 불러와도 마찬가지다.
+    </p>
+    <p>
+      반대로 이 버튼들은 <strong>저장하지 않은 편집 중인 값</strong>으로 돈다.
+      값을 바꿔가며 저장 전에 바로 시험해 볼 수 있다는 뜻이다.
+    </p>
+  </div>
+
+  <h3>3.3 영상 패널</h3>
   <p>
-    같은 네 가지가 설정 탭 안 <code>실행</code> 항목에도 버튼으로 있다. 거기서 누르면
-    <strong>저장하지 않은 편집 중인 값</strong>으로 돈다. 값을 바꿔가며 바로 시험할 때 쓴다.
+    설정 패널과 달리 <strong>값을 들고 있지 않다.</strong> 전부 <strong>저장된 활성 프리셋</strong>을
+    읽어서 돈다. 설정을 고쳤으면 <strong>저장</strong>을 먼저 눌러야 반영된다.
   </p>
-
-  <h3>프로젝터 영상</h3>
-  <p>LED 벽이면 쓰지 않는다. <code>08 프로젝터</code> 목록이 비어 있으면 전부 꺼진다.</p>
   <div class="tablewrap"><table>
-    <thead><tr><th>항목</th><th>하는 일</th></tr></thead>
+    <thead><tr><th>묶음</th><th>버튼</th><th>하는 일</th></tr></thead>
     <tbody>
-      <tr><td><strong>프로젝터 영상 변환 (원본에서)</strong></td><td>아나모픽과 프로젝터 워프를 한 번에. 중간본이 없어 화질이 가장 좋다</td></tr>
-      <tr><td>프로젝터 영상 변환 (벽 영상에서)</td><td>이미 만든 <code>_curved.mp4</code> 에서. 그 해상도가 상한이 된다</td></tr>
-    </tbody>
-  </table></div>
-
-  <h3>영상</h3>
-  <div class="tablewrap"><table>
-    <thead><tr><th>항목</th><th>하는 일</th></tr></thead>
-    <tbody>
-      <tr><td><strong>영상 변환 (아나모픽)</strong></td><td>받은 영상을 벽 형상에 맞게 역왜곡한다 → <code>_curved.mp4</code><br>
+      <tr><td rowspan="3">01 영상 변환</td>
+          <td><strong>영상 변환 (아나모픽)</strong></td><td>받은 영상을 벽 형상에 맞게 역왜곡한다 → <code>_curved.mp4</code><br>
       <span class="g">역왜곡은 벽 때문에 생길 왜곡을 미리 반대로 넣어 두는 것이다. 벽에 걸리면
       두 왜곡이 서로 상쇄돼 똑바로 보인다.</span></td></tr>
-      <tr><td>영상 변환 (전개만)</td><td>꺾임 보정 없이 비율만 맞춘다 → <code>_wall.mp4</code></td></tr>
-      <tr><td><strong>눈 시점으로 되돌려 보기</strong></td><td>벽에 넣을 파일을 받아 스위트스팟에서 뭐가 보일지 계산 → <code>_eye.mp4</code></td></tr>
-      <tr><td>무비 렌더 큐 점검</td><td>MRQ 출력 해상도가 뷰포트와 맞는지 본다<br>
+      <tr><td>영상 변환 (전개만)</td><td>꺾임 보정 없이 비율만 맞춘다 → <code>_wall.mp4</code>.
+          <strong>어디서 봐도 같게</strong> 보여야 하는 로고·자막용, 또는 비교 기준선</td></tr>
+      <tr><td><strong>눈 시점으로 되돌려 보기</strong></td><td>벽에 넣을 파일을 받아 스위트스팟에서 뭐가 보일지 계산 → <code>_eye.mp4</code>.
+          검증 전용이라 최대 3840 px 로 뽑는다</td></tr>
+
+      <tr><td rowspan="2">02 프로젝터 영상</td>
+          <td><strong>프로젝터 영상 변환 (원본에서)</strong></td><td>아나모픽과 프로젝터 워프를 한 번에. 중간본이 없어 화질이 가장 좋다</td></tr>
+      <tr><td>프로젝터 영상 변환 (벽 영상에서)</td><td>이미 만든 <code>_curved.mp4</code> 에서. 그 해상도가 상한이 된다</td></tr>
+
+      <tr><td rowspan="3">03 렌더 결과</td>
+          <td>무비 렌더 큐 점검</td><td>MRQ 출력 해상도가 뷰포트와 맞는지 본다<br>
       <span class="g">MRQ 는 무비 렌더 큐. 언리얼 화면을 영상 파일로 구워 내는 기능이다.</span></td></tr>
       <tr><td>렌더 결과 좌우 합치기</td><td><code>Saved/MovieRenders</code> 의 뷰포트별 파일을 패널 순서대로 가로로 붙인다</td></tr>
       <tr><td>출력 폴더 열기</td><td>변환 결과가 쌓이는 <code>Content/Movies</code></td></tr>
@@ -507,7 +531,7 @@ hr { border: 0; border-top: 1px solid var(--hairline-2); margin: 2.5rem 0; }
       <span class="g">법선은 면에 수직으로 세운 방향이다. 벽이 어느 쪽을 향하는지를 나타낸다.
       이음매는 패널과 패널이 만나는 자리, 또는 꺾인 벽의 코너다.</span></span></li>
     <li class="steps-key">
-      <b>격자 영상으로 아나모픽 → 눈 시점으로 되돌려 보기</b>
+      <b>격자 영상으로 아나모픽 → 눈 시점으로 되돌려 보기</b> <span>(영상 도구)</span>
       <span>격자가 곧게 펴지면 형상이 맞은 것. <strong>최종 검산</strong></span>
     </li>
     <li><b>벽 만들기</b> → <b>클러스터 실행</b></li>
@@ -1542,10 +1566,10 @@ md.set_vertex_instance_uv(inst, unreal.Vector2D(u / W, 1.0 - f), 0)
     MRQ 로 렌더하면 <strong>뷰포트마다 파일이 하나씩</strong> 나온다. 벽에 넣을 파일은 한 장이므로
     붙여야 한다.
   </p>
-  <div class="block"><pre>1. Tools &gt; Anamorphic Rig &gt; 렌더 결과 좌우 합치기
+  <div class="block"><pre>1. 영상 도구 &gt; 03 렌더 결과 &gt; 렌더 결과 좌우 합치기
      Saved/MovieRenders 의 vp_*.mp4 를 패널 순서대로 → ...merged.mp4
 2. 설정 편집 &gt; 05 출력 &gt; 영상 파일 = 그 merged.mp4
-3. 벽 만들기</pre></div>
+3. 설정 편집 &gt; 실행 &gt; 벽 만들기</pre></div>
   <p>
     붙이는 순서는 <strong>설정의 패널 순서</strong>다. 파일명 알파벳순이 아니다
     (<code>Center</code>/<code>Left</code>/<code>Right</code> 같은 이름이면 알파벳순은 가운데부터가
