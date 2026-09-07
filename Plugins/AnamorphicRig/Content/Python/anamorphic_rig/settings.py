@@ -112,6 +112,73 @@ class ARFilePick(unreal.Object):
     file = unreal.uproperty(unreal.FilePath, meta=dict(DisplayName="파일", FilePathFilter="mp4"))
 
 
+def _run_menu(fn):
+    """메뉴 동작 하나를 돌린다. 여기서 터지면 로그에만 남고 사용자는 모르므로 대화상자로 보여 준다."""
+    from . import menu as MN              # 늦게 import 한다 (menu 가 이 모듈을 쓴다)
+    try:
+        fn(MN)
+    except Exception as e:
+        unreal.log_error("[AnamorphicRig] %s" % e)
+        MN._dialog("Anamorphic Rig", str(e))
+
+
+@unreal.uclass()
+class ARVideoTools(unreal.Object):
+    """영상 관련 동작만 모은 패널. 설정 편집과 같은 모달리스 탭으로 뜬다.
+
+    값은 들고 있지 않다. 전부 활성 프리셋을 읽어서 돈다. 프로퍼티가 없어도
+    CallInEditor 함수는 그려진다 (FObjectDetails::AddCallInEditorMethods).
+    """
+
+    @unreal.ufunction(meta=_m("01 영상 변환", 10, CallInEditor="true",
+                            DisplayName="영상 변환 (아나모픽)",
+                            ToolTip="받은 영상을 벽 형상에 맞게 역왜곡한다"))
+    def act_convert_curved(self):
+        _run_menu(lambda m: m.act_convert_curved())
+
+    @unreal.ufunction(meta=_m("01 영상 변환", 20, CallInEditor="true",
+                            DisplayName="영상 변환 (전개만)",
+                            ToolTip="꺾임 보정 없이 비율만 맞춘다"))
+    def act_convert_wall(self):
+        _run_menu(lambda m: m.act_convert_wall())
+
+    @unreal.ufunction(meta=_m("01 영상 변환", 30, CallInEditor="true",
+                            DisplayName="눈 시점으로 되돌려 보기",
+                            ToolTip="벽 없이 착시가 맞는지 확인한다. 납품물 아님"))
+    def act_preview_video(self):
+        _run_menu(lambda m: m.act_preview_video())
+
+    @unreal.ufunction(meta=_m("02 프로젝터 영상", 10, CallInEditor="true",
+                            DisplayName="프로젝터 영상 변환 (원본에서)",
+                            ToolTip="아나모픽과 프로젝터 워프를 한 번에. 중간본이 없어 화질이 가장 좋다"))
+    def act_proj_from_source(self):
+        _run_menu(lambda m: m.act_proj_from_source())
+
+    @unreal.ufunction(meta=_m("02 프로젝터 영상", 20, CallInEditor="true",
+                            DisplayName="프로젝터 영상 변환 (벽 영상에서)",
+                            ToolTip="이미 만들어진 _curved.mp4 에서. 그 해상도가 상한이 된다"))
+    def act_proj_from_wall(self):
+        _run_menu(lambda m: m.act_proj_from_wall())
+
+    @unreal.ufunction(meta=_m("03 렌더 결과", 10, CallInEditor="true",
+                            DisplayName="무비 렌더 큐 점검",
+                            ToolTip="출력 해상도가 뷰포트와 맞는지 본다"))
+    def act_check_mrq(self):
+        _run_menu(lambda m: m.act_check_mrq())
+
+    @unreal.ufunction(meta=_m("03 렌더 결과", 20, CallInEditor="true",
+                            DisplayName="렌더 결과 좌우 합치기",
+                            ToolTip="Saved/MovieRenders 의 뷰포트 파일을 가로로 붙인다"))
+    def act_merge(self):
+        _run_menu(lambda m: m.act_merge())
+
+    @unreal.ufunction(meta=_m("03 렌더 결과", 30, CallInEditor="true",
+                            DisplayName="출력 폴더 열기",
+                            ToolTip="변환한 영상이 쌓이는 Content/Movies 를 연다"))
+    def act_open_movies(self):
+        _run_menu(lambda m: m.act_open_movies())
+
+
 @unreal.uclass()
 class AnamorphicRigSettings(unreal.Object):
     """현장 하나의 설정. 값은 JSON 프리셋 파일에 저장된다 (presets.py)."""
@@ -302,13 +369,8 @@ class AnamorphicRigSettings(unreal.Object):
         self._run(lambda m: m.act_check(self))
 
     def _run(self, fn):
-        """버튼 하나를 돌린다. 여기서 터지면 로그에만 남고 사용자는 모르므로 대화상자로 보여 준다."""
-        from . import menu as MN          # 늦게 import 한다 (menu 가 이 모듈을 쓴다)
-        try:
-            fn(MN)
-        except Exception as e:
-            unreal.log_error("[AnamorphicRig] %s" % e)
-            MN._dialog("Anamorphic Rig", str(e))
+        """버튼 하나를 돌린다."""
+        _run_menu(fn)
 
     # === 00 프리셋 ========================================================
     # 어느 프리셋을 편집 중인지 패널에서 바로 보이게 한다. 탭을 여러 개 띄우거나

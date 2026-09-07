@@ -677,6 +677,18 @@ def _pick_file(title):
     return os.path.join(ROOT, p)
 
 
+def act_video():
+    """영상 도구를 모달리스 탭으로 연다. 설정 편집과 같은 방식이다 (act_edit 참고).
+
+    설정 패널과 달리 값을 안 들고 있어서 편집 중인 상태를 살려 둘 이유가 없다.
+    누를 때마다 새로 만든다.
+    """
+    panel = unreal.new_object(S.ARVideoTools.static_class())
+    sub = unreal.get_editor_subsystem(unreal.AssetEditorSubsystem)
+    if not sub.open_editor_for_assets([panel]):
+        _details("영상 도구", panel, 560, 360)
+
+
 # --- 등록 -------------------------------------------------------------------
 # 메뉴는 모달이 아니라, 누르는 즉시 뷰포트가 그대로 보인다. 평면도처럼 뷰포트를 봐야
 # 하는 동작은 설정 대화상자 안의 버튼보다 여기가 낫다. 섹션으로 묶어 둔다.
@@ -687,30 +699,15 @@ GROUPS = [
         ("SaveAs", "프리셋 다른 이름으로 저장", "지금 값을 새 이름으로 복사한다", act_save_as),
     ]),
     ("Wall", "벽", [
-        ("Check", "형상 점검", "치수·화각·입사각과 경고를 출력 로그에 찍는다", act_check),
-        ("Plan", "평면도 보기 / 지우기", "에디터 뷰포트에 평면도를 그린다. 다시 누르면 지운다", act_preview),
-        ("Build", "벽 만들기", "워프 메시와 리그를 현재 레벨에 만든다", act_build),
         ("Probe", "검증 방 놓기 / 지우기",
          "벽 뒤에 격자 방을 판다. 착시가 맞으면 코너가 사라진다. 다시 누르면 지운다", act_probe),
-        ("Launch", "클러스터 실행", "nDisplay 창을 별도 프로세스로 띄운다", act_launch),
         ("Scripts", "배포 스크립트 설치",
          "Package.bat / Run_Packaged.ps1 등을 프로젝트 루트에 복사한다. 플러그인만 받았을 때 한 번 누른다", act_install_scripts),
         ("Proj", "프로젝터 배치 점검", "담당 구간·화각·입사각·겹침·밀도 교차점을 낸다", act_projectors),
         ("Blend", "블렌드 맵 만들기", "프로젝터별 알파 맵을 nDisplay/blend 에 쓴다", act_blend),
     ]),
-    ("Video2", "프로젝터 영상", [
-        ("PSrc", "프로젝터 영상 변환 (원본에서)",
-         "아나모픽과 프로젝터 워프를 한 번에. 중간본이 없어 화질이 가장 좋다", act_proj_from_source),
-        ("PWall", "프로젝터 영상 변환 (벽 영상에서)",
-         "이미 만들어진 _curved.mp4 에서. 그 해상도가 상한이 된다", act_proj_from_wall),
-    ]),
     ("Video", "영상", [
-        ("Curved", "영상 변환 (아나모픽)", "받은 영상을 벽 형상에 맞게 역왜곡한다", act_convert_curved),
-        ("Wall2", "영상 변환 (전개만)", "꺾임 보정 없이 비율만 맞춘다", act_convert_wall),
-        ("Eye", "눈 시점으로 되돌려 보기", "벽 없이 착시가 맞는지 확인한다. 납품물 아님", act_preview_video),
-        ("MRQ", "무비 렌더 큐 점검", "출력 해상도가 뷰포트와 맞는지 본다", act_check_mrq),
-        ("Merge", "렌더 결과 좌우 합치기", "Saved/MovieRenders 의 뷰포트 파일을 가로로 붙인다", act_merge),
-        ("Movies", "출력 폴더 열기", "변환한 영상이 쌓이는 Content/Movies 를 연다", act_open_movies),
+        ("Video", "영상 도구", "변환·미리보기·렌더 결과를 모달리스 탭으로 연다", act_video),
     ]),
 ]
 
